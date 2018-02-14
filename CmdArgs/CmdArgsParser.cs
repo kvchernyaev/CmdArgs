@@ -218,9 +218,21 @@ namespace CmdArgs
                     Type fieldType = GetFieldType(mi);
                     va.SetType(fieldType);
 
+                    // todo все эти проверки должны быть в самом аргументе при его создании 
                     if (va.DefaultValue != null && !va.ValueType.IsInstanceOfType(va.DefaultValue))
                         throw new ConfException(
                             $"Argument [{va.Name}]: {nameof(va.DefaultValue)} must be of type {va.ValueType.Name}, but it is of type {va.DefaultValue.GetType().Name}");
+                    if (va.AllowedValues?.Length > 0)
+                    {
+                        foreach (object allowedValue in va.AllowedValues)
+                            if (!va.ValueType.IsInstanceOfType(allowedValue))
+                                throw new ConfException(
+                                    $"Argument [{va.Name}]: allowed value [{allowedValue}] must be of type {va.ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
+
+                        if (va.DefaultValue != null && !va.AllowedValues.Contains(va.DefaultValue))
+                            throw new ConfException(
+                                $"Argument [{va.Name}]: default value [{va.DefaultValue}[ is not allowed");
+                    }
                     if (va.Culture == null)
                         va.Culture = this._culture;
                 }

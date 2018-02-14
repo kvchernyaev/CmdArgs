@@ -15,19 +15,6 @@ namespace CmdArgsTests
     [TestFixture]
     public class ValueNullableTests
     {
-        [Test]
-        public void TestNullableOk()
-        {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "34", "-a"});
-
-            Assert.AreEqual(34, rv.Args.S);
-            Assert.AreEqual(null, rv.Args.D);
-            Assert.AreEqual(-67, rv.Args.A);
-        }
-
-
-
         class Conf
         {
             [ValuedArgument('s')]
@@ -40,6 +27,19 @@ namespace CmdArgsTests
 
             [ValuedArgument('a', DefaultValue = -67)]
             public int? A { get; set; }
+        }
+
+
+
+        [Test]
+        public void TestNullableOk()
+        {
+            var p = new CmdArgsParser();
+            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "34", "-a"});
+
+            Assert.AreEqual(34, rv.Args.S);
+            Assert.AreEqual(null, rv.Args.D);
+            Assert.AreEqual(-67, rv.Args.A);
         }
     }
 }

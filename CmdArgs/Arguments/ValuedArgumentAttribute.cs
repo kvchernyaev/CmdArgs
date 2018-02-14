@@ -1,5 +1,6 @@
 ﻿#region usings
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,6 +36,13 @@ namespace CmdArgs
         {
             get => ((ValuedArgument) Argument).DefaultValue;
             set => ((ValuedArgument) Argument).DefaultValue = value;
+        }
+
+
+        public object[] AllowedValues
+        {
+            get => ((ValuedArgument) Argument).AllowedValues;
+            set => ((ValuedArgument) Argument).AllowedValues = value;
         }
 
 

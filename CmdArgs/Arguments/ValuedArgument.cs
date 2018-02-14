@@ -56,6 +56,8 @@ namespace CmdArgs
 
 
         public object DefaultValue { get; set; }
+        public object[] AllowedValues { get; set; }
+
         public IFormatProvider Culture { get; set; }
 
 
@@ -92,6 +94,10 @@ namespace CmdArgs
                 rv = Enum.Parse(ValueType, val, true);
             else
                 rv = Convert.ChangeType(val, ValueType, Culture ?? CultureInfo.InvariantCulture);
+
+            if (AllowedValues?.Length > 0)
+                if (!AllowedValues.Contains(rv))
+                    throw new CmdException($"Argument [{Name}]: value [{val}] is not allowed");
             return rv;
         }
     }

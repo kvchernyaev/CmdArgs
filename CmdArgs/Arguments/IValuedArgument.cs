@@ -13,6 +13,7 @@ namespace CmdArgs
     public interface IValuedArgument : IArgument
     {
         object DefaultValue { get; }
+        object[] AllowedValues { get; }
 
         IFormatProvider Culture { get; }
     }
