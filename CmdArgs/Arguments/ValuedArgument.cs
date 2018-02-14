@@ -13,9 +13,9 @@ namespace CmdArgs
 {
     public class ValuedArgument : Argument, IValuedArgument
     {
-        public Type ValueCollectionType { get; set; }
+        public Type ValueCollectionType { get; private set; }
+        public Type ValueNullableType { get; private set; }
         public override Type ValueType { get; set; }
-        public Type ValueNullableType { get; set; }
 
 
         public void SetType(Type src)
@@ -84,14 +84,14 @@ namespace CmdArgs
         internal override bool CanHaveValue => true;
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
         /// <returns>Instance of ValueType</returns>
         public virtual object DeserializeOne(string val)
         {
-            object rv = Convert.ChangeType(val, ValueType, Culture ?? CultureInfo.InvariantCulture);
+            object rv;
+            if (ValueType.IsEnum)
+                rv = Enum.Parse(ValueType, val, true);
+            else
+                rv = Convert.ChangeType(val, ValueType, Culture ?? CultureInfo.InvariantCulture);
             return rv;
         }
     }
