@@ -17,18 +17,34 @@ namespace CmdArgsTests
     public class ValuedTests
     {
         [Test]
-        public void TestTypeNotMatch()
+        public void TestBool()
         {
             var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfTypeNotMatch>(new[] {"-s"}));
+            Res<ConfBool> res = p.ParseCommandLine<ConfBool>(new[] {"-a", "-b", "true"});
+            Assert.AreEqual(expected: true, actual: res.Args.A);
+            Assert.AreEqual(expected: true, actual: res.Args.B);
+            Assert.AreEqual(expected: false, actual: res.Args.C);
+            Assert.AreEqual(expected: null, actual: res.Args.D);
         }
 
 
 
-        class ConfTypeNotMatch
+        class ConfBool
         {
-            [ValuedArgument(typeof(int), 's', "some")]
-            public bool Some { get; set; }
+            [ValuedArgument('a', DefaultValue = true)]
+            public bool A { get; set; }
+
+
+            [ValuedArgument('b')]
+            public bool B { get; set; }
+
+
+            [ValuedArgument('c')]
+            public bool C { get; set; }
+
+
+            [ValuedArgument('d')]
+            public bool? D { get; set; }
         }
 
 
@@ -45,7 +61,7 @@ namespace CmdArgsTests
 
         class ConfDefTypeNotMatch
         {
-            [ValuedArgument(typeof(int), 's', "some", DefaultValue = "1")]
+            [ValuedArgument('s', "some", DefaultValue = "1")]
             public int Some { get; set; }
         }
 
@@ -57,7 +73,17 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "1"});
 
-            Assert.AreEqual(rv.Args.Some, 1);
+            Assert.AreEqual(actual: rv.Args.Some, expected: 1);
+        }
+
+
+        [Test]
+        public void TestNegative()
+        {
+            var p = new CmdArgsParser();
+            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "-1"});
+
+            Assert.AreEqual(actual: rv.Args.Some, expected: -1);
         }
 
 
@@ -67,7 +93,7 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-d", "11"});
 
-            Assert.AreEqual(rv.Args.Dummy, 11);
+            Assert.AreEqual(11L, rv.Args.Dummy);
         }
 
 
@@ -77,7 +103,7 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--def"});
 
-            Assert.AreEqual(rv.Args.Def, 5);
+            Assert.AreEqual(actual: rv.Args.Def, expected: 5);
         }
 
 
@@ -88,7 +114,7 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-t", val});
 
-            Assert.AreEqual(rv.Args.Str, val);
+            Assert.AreEqual(actual: rv.Args.Str, expected: val);
         }
 
 
@@ -111,19 +137,19 @@ namespace CmdArgsTests
 
         class Conf
         {
-            [ValuedArgument(typeof(int), 's', "some")]
+            [ValuedArgument('s', "some")]
             public int Some { get; set; }
 
 
-            [ValuedArgument(typeof(int), 'e', "def", DefaultValue = 5)]
+            [ValuedArgument('e', "def", DefaultValue = 5)]
             public int Def { get; set; }
 
 
-            [ValuedArgument(typeof(int), 'd', "dummy")]
+            [ValuedArgument('d', "dummy")]
             public long Dummy { get; set; }
 
 
-            [ValuedArgument(typeof(string), 't', "str")]
+            [ValuedArgument('t', "str")]
             public string Str { get; set; }
         }
 
@@ -135,26 +161,40 @@ namespace CmdArgsTests
             //var p = new CmdArgsParser(CultureInfo.GetCultureInfo("ru"));
             var p = new CmdArgsParser();
             Res<ConfFloating> rv = p.ParseCommandLine<ConfFloating>(new[]
-                    {"-s", "1.1", "--dec", "1.123", "--flo", "-123.4534"});
+                    {"-s", "1.1", "--doub", "1.123", "--flo", "-123.4534"});
 
-            Assert.AreEqual(rv.Args.Some, 1.1m);
-            Assert.AreEqual(rv.Args.Flo, -123.4534f);
-            Assert.AreEqual(rv.Args.Dec, 1.123m);
+            Assert.AreEqual(actual: rv.Args.Dec, expected: 1.1m);
+            Assert.AreEqual(actual: rv.Args.Doub, expected: 1.123d);
+            Assert.AreEqual(actual: rv.Args.Flo, expected: -123.4534f);
+        }
+
+
+        [Test]
+        public void TestFloatingRus()
+        {
+            var p = new CmdArgsParser(CultureInfo.GetCultureInfo("ru"));
+            //var p = new CmdArgsParser();
+            Res<ConfFloating> rv = p.ParseCommandLine<ConfFloating>(new[]
+                    {"-s", "1,1", "--doub", "1,123", "--flo", "-123,4534"});
+
+            Assert.AreEqual(actual: rv.Args.Dec, expected: 1.1m);
+            Assert.AreEqual(actual: rv.Args.Doub, expected: 1.123d);
+            Assert.AreEqual(actual: rv.Args.Flo, expected: -123.4534f);
         }
 
 
 
         class ConfFloating
         {
-            [ValuedArgument(typeof(double), 's')]
-            public decimal Some { get; set; }
-
-
-            [ValuedArgument(typeof(decimal), 'd', "dec")]
+            [ValuedArgument('s')]
             public decimal Dec { get; set; }
 
 
-            [ValuedArgument(typeof(float), 'f', "flo")]
+            [ValuedArgument('d', "doub")]
+            public double Doub { get; set; }
+
+
+            [ValuedArgument('f', "flo")]
             public float Flo { get; set; }
         }
     }

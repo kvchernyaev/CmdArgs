@@ -20,7 +20,7 @@ namespace CmdArgs
 
         public string Name => LongName ?? ShortName.ToString();
 
-        public abstract Type ValueType { get; }
+        public abstract Type ValueType { get; set; }
 
 
         #region ctors

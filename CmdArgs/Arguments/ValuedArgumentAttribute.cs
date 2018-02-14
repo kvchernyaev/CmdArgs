@@ -13,21 +13,21 @@ namespace CmdArgs
     public class ValuedArgumentAttribute : ArgumentAttribute, IValuedArgument
     {
         #region ctors
-        public ValuedArgumentAttribute(Type type, char shortName)
-            : base(new ValuedArgument(type, shortName)) { }
+        public ValuedArgumentAttribute(char shortName)
+            : base(new ValuedArgument(shortName)) { }
 
 
-        public ValuedArgumentAttribute(Type type, string longName)
-            : base(new ValuedArgument(type, longName)) { }
+        public ValuedArgumentAttribute(string longName)
+            : base(new ValuedArgument(longName)) { }
 
 
-        public ValuedArgumentAttribute(Type type, char shortName, string longName)
-            : base(new ValuedArgument(type, shortName, longName)) { }
+        public ValuedArgumentAttribute(char shortName, string longName)
+            : base(new ValuedArgument(shortName, longName)) { }
 
 
-        public ValuedArgumentAttribute(Type type, char shortName, string longName,
+        public ValuedArgumentAttribute(char shortName, string longName,
             string description)
-            : base(new ValuedArgument(type, shortName, longName, description)) { }
+            : base(new ValuedArgument(shortName, longName, description)) { }
         #endregion
 
 
@@ -35,13 +35,6 @@ namespace CmdArgs
         {
             get => ((ValuedArgument) Argument).DefaultValue;
             set => ((ValuedArgument) Argument).DefaultValue = value;
-        }
-
-
-        public bool ValueIsCollection
-        {
-            get => ((ValuedArgument) Argument).ValueIsCollection;
-            set => ((ValuedArgument) Argument).ValueIsCollection = value;
         }
 
 

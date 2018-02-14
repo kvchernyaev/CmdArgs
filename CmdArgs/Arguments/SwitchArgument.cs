@@ -30,7 +30,14 @@ namespace CmdArgs
         #endregion
 
 
-        public override Type ValueType => typeof(bool);
+        public override Type ValueType
+        {
+            get => typeof(bool);
+            set => throw new Exception(
+                $"{nameof(SwitchArgument)}.{nameof(ValueType)} - setter is prohibited");
+        }
+
+
         internal override bool CanHaveValue => false;
     }
 }

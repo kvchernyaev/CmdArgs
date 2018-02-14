@@ -200,10 +200,10 @@ namespace CmdArgs
         {
             var rv = new List<Binding>();
 
-            Type t = target.GetType();
+            Type confType = target.GetType();
 
-            MemberInfo[] fields = t.GetFields();
-            MemberInfo[] properties = t.GetProperties();
+            MemberInfo[] fields = confType.GetFields();
+            MemberInfo[] properties = confType.GetProperties();
 
             foreach (MemberInfo mi in fields.Concat(properties))
             {
@@ -215,6 +215,9 @@ namespace CmdArgs
 
                 if (attr.Argument is ValuedArgument va)
                 {
+                    Type fieldType = GetFieldType(mi);
+                    va.SetType(fieldType);
+
                     if (va.DefaultValue != null && !va.ValueType.IsInstanceOfType(va.DefaultValue))
                         throw new ConfException(
                             $"Argument [{va.Name}]: {nameof(va.DefaultValue)} must be of type {va.ValueType.Name}, but it is of type {va.DefaultValue.GetType().Name}");
@@ -225,6 +228,14 @@ namespace CmdArgs
             }
 
             return rv;
+        }
+
+
+        Type GetFieldType(MemberInfo mi)
+        {
+            if (mi is FieldInfo fi) return fi.FieldType;
+            if (mi is PropertyInfo pi) return pi.PropertyType;
+            throw new ConfException(mi.GetType().Name);
         }
     }
 }

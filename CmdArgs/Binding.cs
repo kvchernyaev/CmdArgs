@@ -1,5 +1,6 @@
 ﻿#region usings
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -37,8 +38,6 @@ namespace CmdArgs
         {
             if (!arg.CanHaveValue)
                 Check(mi, typeof(bool), arg);
-            else
-                Check(mi, ((ValuedArgument) arg).ValueType, arg);
 
             if (!(mi is FieldInfo || mi is PropertyInfo))
                 throw new ConfException($"Field type [{mi.GetType().Name}] is not accepted");
@@ -128,35 +127,63 @@ namespace CmdArgs
                     throw new CmdException($"Value for argument [{va.Name}] is needed");
                 SetValueInternal(va.DefaultValue);
             }
+            else if (va.ValueIsCollection)
+                DeserializeAndSetValue(values);
             else if (values.Length == 1)
                 DeserializeAndSetValue(values[0]);
-            else if (!va.ValueIsCollection)
-                throw new CmdException(
-                    $"Argument [{va.Name}] can not be a collection");
             else
-                DeserializeAndSetValue(values);
+                throw new CmdException(
+                    $"Argument [{va.Name}] can not be a collection, but passed [{string.Join(",", values)}]");
         }
 
 
         void DeserializeAndSetValue(string[] vals)
         {
-            // todo collection of values
+            var va = (ValuedArgument) Argument;
+
+            Array array = null;
+            IList list = null;
+
+            if (va.ValueCollectionType.IsArray)
+                array = Array.CreateInstance(va.ValueNullableType ?? va.ValueType,
+                    vals.Length);
+            else
+                list = (IList) Activator.CreateInstance(va.ValueCollectionType);
+
+            for (var i = 0; i < vals.Length; i++)
+            {
+                string val = vals[i];
+                object argVal = DeserializeOne(va, val);
+
+                if (va.ValueCollectionType.IsArray) array.SetValue(argVal, i);
+                else list.Add(argVal);
+            }
+
+            SetValueInternal(array ?? list);
+        }
+
+
+        static object DeserializeOne(ValuedArgument va, string val)
+        {
+            object argVal;
+            try
+            {
+                argVal = va.DeserializeOne(val);
+            }
+            catch (FormatException ex)
+            {
+                throw new CmdException(
+                    $"Value [{val}] can not be converted to type {va.ValueType.Name}",
+                    ex);
+            }
+            return argVal;
         }
 
 
         void DeserializeAndSetValue(string val)
         {
             var va = (ValuedArgument) Argument;
-            object argVal;
-            try
-            {
-                argVal = va.Deserialize(val);
-            }
-            catch (FormatException ex)
-            {
-                throw new CmdException(
-                    $"Value [{val}] can not be converted to type {Argument.ValueType.Name}", ex);
-            }
+            object argVal = DeserializeOne(va, val);
 
             SetValueInternal(argVal);
         }
@@ -168,42 +195,15 @@ namespace CmdArgs
         /// <param name="argVal">Must be of argument's type</param>
         void SetValueInternal(object argVal)
         {
-            // todo if type - collection but val is one elem
-
-            object fieldVal;
             if (_miTarget is FieldInfo fi)
-            {
-                fieldVal = Convert(argVal, fi.FieldType);
-                fi.SetValue(_targetConfObject, fieldVal);
-            }
+                fi.SetValue(_targetConfObject, argVal);
             else if (_miTarget is PropertyInfo pi)
-            {
-                fieldVal = Convert(argVal, pi.PropertyType);
-                pi.SetValue(_targetConfObject, fieldVal);
-            }
+                pi.SetValue(_targetConfObject, argVal);
             else
                 throw new ConfException(
                     $"Binding.SetValueInternal(): type [{_miTarget.GetType().Name}] is not accepted");
 
             AlreadySet = true;
-        }
-
-
-        object Convert(object argVal, Type type)
-        {
-            if (type.IsGenericType &&
-                type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                Type realType = type.GenericTypeArguments[0];
-                object o = Convert(argVal, realType);
-                return o;
-            }
-
-            object rv = System.Convert.ChangeType(argVal, type,
-                Argument is ValuedArgument
-                    ? ((ValuedArgument) Argument).Culture ?? CultureInfo.InvariantCulture
-                    : CultureInfo.InvariantCulture);
-            return rv;
         }
     }
 }

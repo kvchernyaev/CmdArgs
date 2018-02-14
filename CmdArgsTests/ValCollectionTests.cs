@@ -1,5 +1,6 @@
 ﻿#region usings
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,13 +16,35 @@ namespace CmdArgsTests
     [TestFixture]
     public class ValCollectionTests
     {
+        class ConfCollections
+        {
+            [ValuedArgument('a')]
+            public int[] Array { get; set; }
+
+
+            [ValuedArgument('l')]
+            public List<int> List { get; set; }
+        }
+
+
+
+        [Test]
+        public void TestCollections()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfCollections> res = p.ParseCommandLine<ConfCollections>(new string[] { });
+        }
+
+
         [Test]
         public void TestIntOk()
         {
             var p = new CmdArgsParser();
-            Res<Conf> res = p.ParseCommandLine<Conf>(new[] {"-i", "1", "2"});
+            Res<ConfCollections> res =
+                p.ParseCommandLine<ConfCollections>(new[] {"-a", "1", "2", "-l", "-3", "45"});
 
-            Assert.IsTrue(new[] {1, 2}.SequenceEqual(res.Args.I));
+            Assert.IsTrue(new[] {1, 2}.SequenceEqual(res.Args.Array));
+            Assert.IsTrue(new[] {-3, 45}.SequenceEqual(res.Args.List));
         }
 
 
@@ -29,15 +52,15 @@ namespace CmdArgsTests
         public void TestNoVal()
         {
             var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-i"}));
+            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfCollections>(new[] {"-a"}));
         }
 
 
 
-        class Conf
+        class ConfOne
         {
-            [ValuedArgument(typeof(int), 'i')]
-            public int[] I { get; set; }
+            [ValuedArgument('i')]
+            public int I { get; set; }
         }
 
 
@@ -46,14 +69,7 @@ namespace CmdArgsTests
         public void TestOne()
         {
             var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] { "-i", "2", "3" }));
-        }
-
-
-        class ConfOne
-        {
-            [ValuedArgument(typeof(int), 'i')]
-            public int I { get; set; }
+            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfOne>(new[] {"-i", "2", "3"}));
         }
     }
 }
