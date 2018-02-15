@@ -1,6 +1,7 @@
 # CmdArgs
 Full example
 
+```cs
 public class ConfFullExample
 {
     [SwitchArgument('', "SwitchOne", "some description")]
@@ -65,3 +66,4 @@ public enum MyEnum : byte
     Two,
     Three
 }
+```
