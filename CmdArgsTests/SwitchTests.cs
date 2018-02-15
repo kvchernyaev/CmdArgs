@@ -15,6 +15,18 @@ namespace CmdArgsTests
     [TestFixture]
     public class SwitchTests
     {
+        class Conf
+        {
+            [SwitchArgument('s', "some", "some description")]
+            public bool Some { get; set; }
+
+
+            [SwitchArgument('d', "dummy", "dummy description")]
+            public bool Dummy { get; set; }
+        }
+
+
+
         [Test]
         public void TestShortname()
         {
@@ -128,6 +140,22 @@ namespace CmdArgsTests
         }
 
 
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfFields
+        {
+            [SwitchArgument('s', "some", "some description")]
+            public bool Some;
+
+
+            [SwitchArgument('d', "dummy", "dummy description")]
+            public bool Dummy;
+        }
+
+
+
         [Test]
         public void TestFields()
         {
@@ -144,30 +172,6 @@ namespace CmdArgsTests
             Assert.AreEqual(rv.Args.Some, s);
             Assert.IsEmpty(rv.UnknownArguments);
             Assert.IsEmpty(rv.AdditionalArguments);
-        }
-
-
-
-        class Conf
-        {
-            [SwitchArgument('s', "some", "some description")]
-            public bool Some { get; set; }
-
-
-            [SwitchArgument('d', "dummy", "dummy description")]
-            public bool Dummy { get; set; }
-        }
-
-
-
-        class ConfFields
-        {
-            [SwitchArgument('s', "some", "some description")]
-            public bool Some;
-
-
-            [SwitchArgument('d', "dummy", "dummy description")]
-            public bool Dummy;
         }
     }
 }

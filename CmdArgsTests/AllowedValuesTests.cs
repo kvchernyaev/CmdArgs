@@ -175,12 +175,12 @@ namespace CmdArgsTests
             /// <summary>
             /// must be 1..20 and divides by 3
             /// </summary>
-            [ValuedArgument('b')] public int B;
+            [ValuedArgument('b', "IntPredicate")] public int B;
 
 
-            public static Predicate<int> B_Predicate_asdf;
-            public static Predicate<int> B_Predicate_qwer;
-            public static Predicate<int> B_Predicate_third = i => i > 0; // const predicate
+            public static Predicate<int> B_Predicate_closure;
+            public static Predicate<int> B_Predicate_set;
+            public static Predicate<int> B_Predicate_const = i => i > 0; // const predicate
         }
 
 
@@ -191,11 +191,11 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             var testi = 20;
             Predicate<int> pred = i => i <= testi; // using closure
-            ConfPredicate.B_Predicate_asdf = pred; // using delegate variable
-            ConfPredicate.B_Predicate_qwer = i => i % 3 == 0;
+            ConfPredicate.B_Predicate_closure = pred; // using delegate variable
+            ConfPredicate.B_Predicate_set = i => i % 3 == 0;
 
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfPredicate>(new[] {"-b", "25"}));
+                p.ParseCommandLine<ConfPredicate>(new[] { "--IntPredicate", "25"}));
         }
 
 
@@ -205,8 +205,8 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             var testi = 20;
             Predicate<int> pred = i => i <= testi; // using closure
-            ConfPredicate.B_Predicate_asdf = pred; // using delegate variable
-            ConfPredicate.B_Predicate_qwer = i => i % 3 == 0;
+            ConfPredicate.B_Predicate_closure = pred; // using delegate variable
+            ConfPredicate.B_Predicate_set = i => i % 3 == 0;
 
             // must be 1..20 and divides by 3
             Res<ConfPredicate> res = p.ParseCommandLine<ConfPredicate>(new[] {"-b", "9"});
