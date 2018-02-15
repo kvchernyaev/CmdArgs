@@ -16,19 +16,6 @@ namespace CmdArgsTests
     [TestFixture]
     public class ValuedTests
     {
-        [Test]
-        public void TestBool()
-        {
-            var p = new CmdArgsParser();
-            Res<ConfBool> res = p.ParseCommandLine<ConfBool>(new[] {"-a", "-b", "true"});
-            Assert.AreEqual(expected: true, actual: res.Args.A);
-            Assert.AreEqual(expected: true, actual: res.Args.B);
-            Assert.AreEqual(expected: false, actual: res.Args.C);
-            Assert.AreEqual(expected: null, actual: res.Args.D);
-        }
-
-
-
         class ConfBool
         {
             [ValuedArgument('a', DefaultValue = true)]
@@ -50,6 +37,30 @@ namespace CmdArgsTests
 
 
         [Test]
+        public void TestBool()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfBool> res = p.ParseCommandLine<ConfBool>(new[] {"-a", "-b", "true"});
+            Assert.AreEqual(expected: true, actual: res.Args.A);
+            Assert.AreEqual(expected: true, actual: res.Args.B);
+            Assert.AreEqual(expected: false, actual: res.Args.C);
+            Assert.AreEqual(expected: null, actual: res.Args.D);
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfDefTypeNotMatch
+        {
+            [ValuedArgument('s', "some", DefaultValue = "1")]
+            public int Some { get; set; }
+        }
+
+
+
+        [Test]
         public void TestDefTypeNotMatch()
         {
             var p = new CmdArgsParser();
@@ -59,10 +70,23 @@ namespace CmdArgsTests
 
 
 
-        class ConfDefTypeNotMatch
+        ////////////////////////////////////////////////////////////////
+        class Conf
         {
-            [ValuedArgument('s', "some", DefaultValue = "1")]
+            [ValuedArgument('s', "some")]
             public int Some { get; set; }
+
+
+            [ValuedArgument('e', "def", DefaultValue = 5)]
+            public int Def { get; set; }
+
+
+            [ValuedArgument('d', "dummy")]
+            public long Dummy { get; set; }
+
+
+            [ValuedArgument('t', "str")]
+            public string Str { get; set; }
         }
 
 
@@ -134,23 +158,22 @@ namespace CmdArgsTests
         }
 
 
+        ////////////////////////////////////////////////////////////////
 
-        class Conf
+
+
+        class ConfFloating
         {
-            [ValuedArgument('s', "some")]
-            public int Some { get; set; }
+            [ValuedArgument('s')]
+            public decimal Dec { get; set; }
 
 
-            [ValuedArgument('e', "def", DefaultValue = 5)]
-            public int Def { get; set; }
+            [ValuedArgument('d', "doub")]
+            public double Doub { get; set; }
 
 
-            [ValuedArgument('d', "dummy")]
-            public long Dummy { get; set; }
-
-
-            [ValuedArgument('t', "str")]
-            public string Str { get; set; }
+            [ValuedArgument('f', "flo")]
+            public float Flo { get; set; }
         }
 
 
@@ -183,19 +206,23 @@ namespace CmdArgsTests
         }
 
 
+        ////////////////////////////////////////////////////////////////
 
-        class ConfFloating
+
+
+        class ConfChar
         {
-            [ValuedArgument('s')]
-            public decimal Dec { get; set; }
+            [ValuedArgument('c')] public char C;
+        }
 
 
-            [ValuedArgument('d', "doub")]
-            public double Doub { get; set; }
 
-
-            [ValuedArgument('f', "flo")]
-            public float Flo { get; set; }
+        [Test]
+        public void TestChar()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfChar> rv = p.ParseCommandLine<ConfChar>(new[] {"-c", "u"});
+            Assert.AreEqual(actual: rv.Args.C, expected: 'u');
         }
     }
 }
