@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -16,6 +17,9 @@ namespace CmdArgs
         public Type ValueCollectionType { get; private set; }
         public Type ValueNullableType { get; private set; }
         public override Type ValueType { get; set; }
+
+        public List<Delegate> ValuePredicatesForOne { get; set; }
+        public List<Delegate> ValuePredicatesForCollection { get; set; }
 
 
         public void SetType(Type src)
@@ -95,10 +99,36 @@ namespace CmdArgs
             else
                 rv = Convert.ChangeType(val, ValueType, Culture ?? CultureInfo.InvariantCulture);
 
-            if (AllowedValues?.Length > 0)
-                if (!AllowedValues.Contains(rv))
-                    throw new CmdException($"Argument [{Name}]: value [{val}] is not allowed");
+            CheckAllowedOne(rv, val);
             return rv;
+        }
+
+
+        void CheckAllowedOne(object value, string valueSrc)
+        {
+            if (AllowedValues?.Length > 0 && !AllowedValues.Contains(value))
+                throw new CmdException($"Argument [{Name}]: value [{valueSrc}] is not allowed");
+            if (ValuePredicatesForOne?.Count > 0)
+                foreach (Delegate predicate in ValuePredicatesForOne)
+                {
+                    var ok = (bool) predicate.DynamicInvoke(value);
+                    if (!ok)
+                        throw new CmdException(
+                            $"Argument [{Name}] value [{valueSrc}] is not allowed by predicate");
+                }
+        }
+
+
+        public void CheckAllowedCollection(object collectionValue)
+        {
+            if (ValuePredicatesForCollection?.Count > 0)
+                foreach (Delegate predicate in ValuePredicatesForCollection)
+                {
+                    var ok = (bool) predicate.DynamicInvoke(collectionValue);
+                    if (!ok)
+                        throw new CmdException(
+                            $"Argument [{Name}] value is not allowed by collection predicate");
+                }
         }
     }
 }

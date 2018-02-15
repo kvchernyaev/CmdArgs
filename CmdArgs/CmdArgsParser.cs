@@ -205,7 +205,14 @@ namespace CmdArgs
             MemberInfo[] fields = confType.GetFields();
             MemberInfo[] properties = confType.GetProperties();
 
-            foreach (MemberInfo mi in fields.Concat(properties))
+            List<MemberInfo> mis = fields.Concat(properties).ToList();
+            List<MemberInfo> miPredicates = mis.Where(x =>
+            {
+                Type miType = GetFieldType(x);
+                return miType.IsGenericType &&
+                       miType.GetGenericTypeDefinition() == typeof(Predicate<>);
+            }).ToList();
+            foreach (MemberInfo mi in mis)
             {
                 var attr = (ArgumentAttribute) mi
                     .GetCustomAttributes(typeof(ArgumentAttribute), true)
@@ -233,8 +240,13 @@ namespace CmdArgs
                             throw new ConfException(
                                 $"Argument [{va.Name}]: default value [{va.DefaultValue}[ is not allowed");
                     }
-                    if (va.Culture == null)
-                        va.Culture = this._culture;
+                    Tuple<List<Delegate>, List<Delegate>> predicates =
+                        GetPredicates(miPredicates, mi.Name, va, target);
+
+                    va.ValuePredicatesForCollection = predicates?.Item1;
+                    va.ValuePredicatesForOne = predicates?.Item2;
+
+                    if (va.Culture == null) va.Culture = this._culture;
                 }
                 rv.Add(new Binding(LongNameIgnoreCase, attr.Argument, mi, target));
             }
@@ -243,10 +255,45 @@ namespace CmdArgs
         }
 
 
-        Type GetFieldType(MemberInfo mi)
+        Tuple<List<Delegate>, List<Delegate>>
+            GetPredicates(List<MemberInfo> allPredicates, string fieldName,
+                ValuedArgument va, object target)
+        {
+            var rv = new Tuple<List<Delegate>, List<Delegate>>(
+                new List<Delegate>(), new List<Delegate>());
+            foreach (MemberInfo mi in allPredicates)
+            {
+                if (!mi.Name.StartsWith(fieldName + "_Predicate")) // it is for other field
+                    continue;
+
+                Type predicateParType = GetFieldType(mi).GenericTypeArguments[0];
+
+                List<Type> possibleTypes = new[]
+                            {va.ValueCollectionType, va.ValueNullableType ?? va.ValueType}
+                    .Where(x => x != null).ToList();
+
+                if (!possibleTypes.Contains(predicateParType))
+                    throw new ConfException(
+                        $"Argument [{va.Name}]: predicate [{mi.Name}] parameter must be of {string.Join(" or ", possibleTypes.Select(x => x.Name))}, but it is of type {predicateParType.Name}");
+
+                Delegate predicate = (Delegate)GetValue(mi, target);
+                if (va.ValueCollectionType == predicateParType) rv.Item1.Add(predicate);
+                else rv.Item2.Add(predicate);
+            }
+            return rv;
+        }
+
+
+        static Type GetFieldType(MemberInfo mi)
         {
             if (mi is FieldInfo fi) return fi.FieldType;
             if (mi is PropertyInfo pi) return pi.PropertyType;
+            throw new ConfException(mi.GetType().Name);
+        }
+        static object GetValue(MemberInfo mi, object target)
+        {
+            if (mi is FieldInfo fi) return fi.GetValue(target);
+            if (mi is PropertyInfo pi) return pi.GetValue(target);
             throw new ConfException(mi.GetType().Name);
         }
     }

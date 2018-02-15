@@ -159,7 +159,18 @@ namespace CmdArgs
                 else list.Add(argVal);
             }
 
-            SetValueInternal(array ?? list);
+            object collectionValue = array ?? list;
+            va.CheckAllowedCollection(collectionValue);
+            SetValueInternal(collectionValue);
+        }
+
+
+        void DeserializeAndSetValue(string val)
+        {
+            var va = (ValuedArgument) Argument;
+            object argVal = DeserializeOne(va, val);
+
+            SetValueInternal(argVal);
         }
 
 
@@ -177,15 +188,6 @@ namespace CmdArgs
                     ex);
             }
             return argVal;
-        }
-
-
-        void DeserializeAndSetValue(string val)
-        {
-            var va = (ValuedArgument) Argument;
-            object argVal = DeserializeOne(va, val);
-
-            SetValueInternal(argVal);
         }
 
 
