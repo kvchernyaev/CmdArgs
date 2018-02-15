@@ -14,6 +14,8 @@ namespace CmdArgs
     {
         object DefaultValue { get; }
         object[] AllowedValues { get; }
+        string RegularExpression { get; }
+
 
         IFormatProvider Culture { get; }
     }

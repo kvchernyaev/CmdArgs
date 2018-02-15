@@ -336,5 +336,65 @@ namespace CmdArgsTests
             Assert.Throws<ConfException>(() =>
                 p.ParseCommandLine<ConfPredicateBadTypeAr>(new[] {"-b", "25"}));
         }
+
+
+        ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfRegex
+        {
+            [ValuedArgument('b', RegularExpression = @"^[a-d]B\d$")]
+            public string B;
+        }
+
+
+
+        [Test]
+        public void TestRegexOk()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfRegex> res = p.ParseCommandLine<ConfRegex>(new[] {"-b", "bB1"});
+            Assert.AreEqual("bB1", res.Args.B);
+        }
+
+
+        [Test]
+        public void TestRegexBad()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfRegex>(new[] {"-b", "eB1"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfRegexInt
+        {
+            [ValuedArgument('b', RegularExpression = @"^[123]0[89]$")]
+            public int B;
+        }
+
+
+
+        [Test]
+        public void TestRegexIntOk()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfRegexInt> res = p.ParseCommandLine<ConfRegexInt>(new[] {"-b", "208"});
+            Assert.AreEqual(208, res.Args.B);
+        }
+
+
+        [Test]
+        public void TestRegexIntBad()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<CmdException>(() =>
+                p.ParseCommandLine<ConfRegexInt>(new[] {"-b", "218"}));
+        }
     }
 }

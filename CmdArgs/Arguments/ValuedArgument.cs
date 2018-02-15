@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 #endregion
 
@@ -61,6 +62,7 @@ namespace CmdArgs
 
         public object DefaultValue { get; set; }
         public object[] AllowedValues { get; set; }
+        public string RegularExpression { get; set; }
 
         public IFormatProvider Culture { get; set; }
 
@@ -116,6 +118,10 @@ namespace CmdArgs
                         throw new CmdException(
                             $"Argument [{Name}] value [{valueSrc}] is not allowed by predicate");
                 }
+            if (!string.IsNullOrWhiteSpace(RegularExpression))
+                if (!Regex.IsMatch(valueSrc, RegularExpression))
+                    throw new CmdException(
+                        $"Argument [{Name}] value [{valueSrc}] is not allowed by regular expression");
         }
 
 

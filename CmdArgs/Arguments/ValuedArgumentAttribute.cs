@@ -46,6 +46,13 @@ namespace CmdArgs
         }
 
 
+        public string RegularExpression
+        {
+            get => ((ValuedArgument) Argument).RegularExpression;
+            set => ((ValuedArgument) Argument).RegularExpression = value;
+        }
+
+
         public IFormatProvider Culture
         {
             get => ((ValuedArgument) Argument).Culture;
