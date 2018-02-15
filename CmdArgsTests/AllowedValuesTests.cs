@@ -164,5 +164,177 @@ namespace CmdArgsTests
             Assert.Throws<ConfException>(() =>
                 p.ParseCommandLine<ConfAllowedBadDefault>(new[] {"-b"}));
         }
+
+
+
+        ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        class ConfPredicate
+        {
+            /// <summary>
+            /// must be 1..20 and divides by 3
+            /// </summary>
+            [ValuedArgument('b')] public int B;
+
+
+            public static Predicate<int> B_Predicate_asdf;
+            public static Predicate<int> B_Predicate_qwer;
+            public static Predicate<int> B_Predicate_third = i => i > 0; // const predicate
+        }
+
+
+
+        [Test]
+        public void TestPredicateBad()
+        {
+            var p = new CmdArgsParser();
+            var testi = 20;
+            Predicate<int> pred = i => i <= testi; // using closure
+            ConfPredicate.B_Predicate_asdf = pred; // using delegate variable
+            ConfPredicate.B_Predicate_qwer = i => i % 3 == 0;
+
+            Assert.Throws<CmdException>(() =>
+                p.ParseCommandLine<ConfPredicate>(new[] {"-b", "25"}));
+        }
+
+
+        [Test]
+        public void TestPredicateOk()
+        {
+            var p = new CmdArgsParser();
+            var testi = 20;
+            Predicate<int> pred = i => i <= testi; // using closure
+            ConfPredicate.B_Predicate_asdf = pred; // using delegate variable
+            ConfPredicate.B_Predicate_qwer = i => i % 3 == 0;
+
+            // must be 1..20 and divides by 3
+            Res<ConfPredicate> res = p.ParseCommandLine<ConfPredicate>(new[] {"-b", "9"});
+            Assert.AreEqual(9, res.Args.B);
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfPredicateArOne
+        {
+            [ValuedArgument('b')] public int[] B;
+
+
+            public static Predicate<int> B_Predicate_one = i => i > 2; // const predicate
+        }
+
+
+
+        [Test]
+        public void TestPredicateArOneOk()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfPredicateArOne> res =
+                p.ParseCommandLine<ConfPredicateArOne>(new[] {"-b", "25", "123"});
+            Assert.IsTrue(new[] {25, 123}.SequenceEqual(res.Args.B));
+        }
+
+
+        [Test]
+        public void TestPredicateArOneBad()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<CmdException>(() =>
+                p.ParseCommandLine<ConfPredicateArOne>(new[] {"-b", "25", "1", "123"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfPredicateArAr
+        {
+            [ValuedArgument('b')] public int[] B;
+
+
+            public static Predicate<int> B_Predicate_one = i => i > 2; // const predicate
+            public static Predicate<int[]> B_Predicate_ar = i => i.Length > 2; // const predicate
+        }
+
+
+
+        [Test]
+        public void TestPredicateArArOk()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfPredicateArAr> res =
+                p.ParseCommandLine<ConfPredicateArAr>(new[] {"-b", "25", "123", "12"});
+            Assert.IsTrue(new[] {25, 123, 12}.SequenceEqual(res.Args.B));
+        }
+
+
+        [Test]
+        public void TestPredicateArArBadOne()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<CmdException>(() =>
+                p.ParseCommandLine<ConfPredicateArAr>(new[] {"-b", "25", "1", "12"}));
+        }
+
+
+        [Test]
+        public void TestPredicateArArBadAr()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<CmdException>(() =>
+                p.ParseCommandLine<ConfPredicateArAr>(new[] {"-b", "25", "12"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfPredicateBadType
+        {
+            [ValuedArgument('b')] public int B;
+
+
+            public static Predicate<string>
+                B_Predicate_third = i => i.Length > 10; // const predicate
+        }
+
+
+
+        [Test]
+        public void TestPredicateBadType()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfPredicateBadType>(new[] {"-b", "25"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfPredicateBadTypeAr
+        {
+            [ValuedArgument('b')] public int[] B;
+
+
+            public static Predicate<string>
+                B_Predicate_third = i => i.Length > 10; // const predicate
+        }
+
+
+
+        [Test]
+        public void TestPredicateBadTypeAr()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfPredicateBadTypeAr>(new[] {"-b", "25"}));
+        }
     }
 }
