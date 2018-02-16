@@ -15,7 +15,7 @@ namespace CmdArgs
 {
     internal class Binding
     {
-        public Argument Argument { get; private set; }
+        public Argument Argument { get; }
         readonly MemberInfo _miTarget;
         readonly object _targetConfObject;
 
@@ -25,72 +25,10 @@ namespace CmdArgs
         public Binding(bool longNameIgnoreCase, Argument argument, MemberInfo miTarget,
             object targetConfObject)
         {
-            Check(argument, miTarget);
-
             _longNameIgnoreCase = longNameIgnoreCase;
             Argument = argument;
             _miTarget = miTarget;
             _targetConfObject = targetConfObject;
-        }
-
-
-        static void Check(Argument arg, MemberInfo mi)
-        {
-            if (!arg.CanHaveValue)
-                Check(mi, typeof(bool), arg);
-
-            if (!(mi is FieldInfo || mi is PropertyInfo))
-                throw new ConfException($"Field type [{mi.GetType().Name}] is not accepted");
-        }
-
-
-        static void Check(MemberInfo mi, Type type, Argument arg)
-        {
-            if (mi is FieldInfo fi)
-            {
-                if (!Check(type, fi.FieldType))
-                    throw new ConfException(
-                        $"Argument [{arg.Name}]: field must be of type {type.Name}, but it is of type {fi.FieldType.Name}");
-            }
-            else if (mi is PropertyInfo pi)
-                if (!Check(type, pi.PropertyType))
-                    throw new ConfException(
-                        $"Argument [{arg.Name}]: field must be of type {type.Name}, but it is of type {pi.PropertyType.Name}");
-        }
-
-
-        /// <summary>
-        /// argument type -> allowed other field types
-        /// </summary>
-        static readonly Dictionary<Type, List<Type>> AllowedTypes =
-            new Dictionary<Type, List<Type>>()
-                {
-                    {typeof(char), new List<Type> {typeof(string)}},
-                    {typeof(int), new List<Type> {typeof(long)}},
-                    {typeof(short), new List<Type> {typeof(int), typeof(long)}},
-                    {typeof(byte), new List<Type> {typeof(short), typeof(int), typeof(long)}},
-                    //
-                    //{typeof(decimal), new List<Type> {typeof(double)}},
-                    {typeof(double), new List<Type> {typeof(decimal)}},
-                    {typeof(float), new List<Type> {typeof(decimal), typeof(double)}},
-                };
-
-
-        static bool Check(Type argType, Type fieldType)
-        {
-            if (argType.IsAssignableFrom(fieldType)) return true;
-
-            if (fieldType.IsGenericType &&
-                fieldType.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                Type realFieldType = fieldType.GenericTypeArguments[0];
-                return Check(argType, realFieldType);
-            }
-
-            if (AllowedTypes.TryGetValue(argType, out List<Type> allowedTypes))
-                return allowedTypes.Contains(fieldType);
-
-            return false;
         }
 
 

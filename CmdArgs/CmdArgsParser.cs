@@ -223,23 +223,8 @@ namespace CmdArgs
                 if (attr.Argument is ValuedArgument va)
                 {
                     Type fieldType = GetFieldType(mi);
-                    va.SetType(fieldType);
+                    va.SetTypeAndCheck(fieldType); // CheckFieldType inside
 
-                    // todo все эти проверки должны быть в самом аргументе при его создании 
-                    if (va.DefaultValue != null && !va.ValueType.IsInstanceOfType(va.DefaultValue))
-                        throw new ConfException(
-                            $"Argument [{va.Name}]: {nameof(va.DefaultValue)} must be of type {va.ValueType.Name}, but it is of type {va.DefaultValue.GetType().Name}");
-                    if (va.AllowedValues?.Length > 0)
-                    {
-                        foreach (object allowedValue in va.AllowedValues)
-                            if (!va.ValueType.IsInstanceOfType(allowedValue))
-                                throw new ConfException(
-                                    $"Argument [{va.Name}]: allowed value [{allowedValue}] must be of type {va.ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
-
-                        if (va.DefaultValue != null && !va.AllowedValues.Contains(va.DefaultValue))
-                            throw new ConfException(
-                                $"Argument [{va.Name}]: default value [{va.DefaultValue}[ is not allowed");
-                    }
                     Tuple<List<Delegate>, List<Delegate>> predicates =
                         GetPredicates(miPredicates, mi.Name, va, target);
 
@@ -248,6 +233,9 @@ namespace CmdArgs
 
                     if (va.Culture == null) va.Culture = this._culture;
                 }
+                else
+                    attr.Argument.CheckFieldType(GetFieldType(mi));
+
                 rv.Add(new Binding(LongNameIgnoreCase, attr.Argument, mi, target));
             }
 
@@ -255,7 +243,7 @@ namespace CmdArgs
         }
 
 
-        Tuple<List<Delegate>, List<Delegate>>
+        static Tuple<List<Delegate>, List<Delegate>>
             GetPredicates(List<MemberInfo> allPredicates, string fieldName,
                 ValuedArgument va, object target)
         {
@@ -276,7 +264,7 @@ namespace CmdArgs
                     throw new ConfException(
                         $"Argument [{va.Name}]: predicate [{mi.Name}] parameter must be of {string.Join(" or ", possibleTypes.Select(x => x.Name))}, but it is of type {predicateParType.Name}");
 
-                Delegate predicate = (Delegate)GetValue(mi, target);
+                var predicate = (Delegate) GetValue(mi, target);
                 if (va.ValueCollectionType == predicateParType) rv.Item1.Add(predicate);
                 else rv.Item2.Add(predicate);
             }
@@ -284,12 +272,14 @@ namespace CmdArgs
         }
 
 
-        static Type GetFieldType(MemberInfo mi)
+        public static Type GetFieldType(MemberInfo mi)
         {
             if (mi is FieldInfo fi) return fi.FieldType;
             if (mi is PropertyInfo pi) return pi.PropertyType;
             throw new ConfException(mi.GetType().Name);
         }
+
+
         static object GetValue(MemberInfo mi, object target)
         {
             if (mi is FieldInfo fi) return fi.GetValue(target);

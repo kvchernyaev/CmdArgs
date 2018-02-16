@@ -15,6 +15,26 @@ namespace CmdArgsTests
     [TestFixture]
     public class SwitchTests
     {
+        class ConfWrongType
+        {
+            [SwitchArgument('s')]
+            public int Some { get; set; }
+        }
+
+
+
+        [Test]
+        public void TestWrongType()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfWrongType>(new[] {"-a"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
         class Conf
         {
             [SwitchArgument('s', "some", "some description")]
@@ -30,8 +50,7 @@ namespace CmdArgsTests
         [Test]
         public void TestShortname()
         {
-            var p = new CmdArgs.CmdArgsParser();
-
+            var p = new CmdArgsParser();
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s"});
             Check(rv, s: true, d: false);
         }

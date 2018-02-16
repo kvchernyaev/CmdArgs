@@ -39,5 +39,13 @@ namespace CmdArgs
 
 
         internal override bool CanHaveValue => false;
+
+
+        public override void CheckFieldType(Type fieldType)
+        {
+            if (fieldType != typeof(bool))
+                throw new ConfException(
+                    $"Argument [{Name}]: field must be of type bool, but it is of type {fieldType.Name}");
+        }
     }
 }

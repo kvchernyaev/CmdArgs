@@ -89,5 +89,8 @@ namespace CmdArgs
 
 
         internal abstract bool CanHaveValue { get; }
+
+
+        public abstract void CheckFieldType(Type fieldType);
     }
 }

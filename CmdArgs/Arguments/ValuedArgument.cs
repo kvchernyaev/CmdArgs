@@ -23,7 +23,7 @@ namespace CmdArgs
         public List<Delegate> ValuePredicatesForCollection { get; set; }
 
 
-        public void SetType(Type src)
+        public void SetTypeAndCheck(Type src)
         {
             if (src.IsArray)
             {
@@ -42,6 +42,26 @@ namespace CmdArgs
             {
                 ValueCollectionType = null;
                 SetValueType(src);
+            }
+
+            CheckFieldType(null);
+
+            // type of DefaultValue
+            if (DefaultValue != null && !ValueType.IsInstanceOfType(DefaultValue))
+                throw new ConfException(
+                    $"Argument [{Name}]: {nameof(DefaultValue)} must be of type {ValueType.Name}, but it is of type {DefaultValue.GetType().Name}");
+
+            // type of AllowedValues
+            if (AllowedValues?.Length > 0)
+            {
+                foreach (object allowedValue in AllowedValues)
+                    if (!ValueType.IsInstanceOfType(allowedValue))
+                        throw new ConfException(
+                            $"Argument [{Name}]: allowed value [{allowedValue}] must be of type {ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
+
+                if (DefaultValue != null && !AllowedValues.Contains(DefaultValue))
+                    throw new ConfException(
+                        $"Argument [{Name}]: default value [{DefaultValue}[ is not allowed");
             }
 
             void SetValueType(Type t)
@@ -90,6 +110,22 @@ namespace CmdArgs
 
 
         internal override bool CanHaveValue => true;
+
+
+        static readonly Type[] AllowedTypes =
+            {
+                typeof(char), typeof(string), typeof(byte), typeof(short), typeof(int),
+                typeof(long), typeof(bool), typeof(uint), typeof(ulong), typeof(ushort),
+                typeof(decimal), typeof(float), typeof(double), typeof(sbyte)
+            };
+
+
+        public override void CheckFieldType(Type fieldType)
+        {
+            if (!ValueType.IsEnum && !AllowedTypes.Contains(ValueType))
+                throw new ConfException(
+                    $"Argument [{Name}]: field type {ValueType.Name} is not allowed");
+        }
 
 
         /// <returns>Instance of ValueType</returns>
