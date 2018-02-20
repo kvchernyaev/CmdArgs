@@ -64,6 +64,7 @@ namespace CmdArgs
 
 
         public object DefaultValue { get; set; }
+        public bool UseDefWhenNoArg { get; set; }
         public object DefaultValueEffective { get; set; }
         public object[] AllowedValues { get; set; }
         public string RegularExpression { get; set; }
@@ -141,6 +142,11 @@ namespace CmdArgs
             CheckAllowedValueType(DefaultValue, nameof(DefaultValue));
 
             if (DefaultValue != null)
+            {
+                if (Mandatory && UseDefWhenNoArg)
+                    throw new ConfException(
+                        $"Argument [{Name}]: {nameof(DefaultValue)} is provided, {nameof(UseDefWhenNoArg)} is true, but {nameof(Mandatory)} is true");
+
                 if (DefaultValue is string s)
                     DefaultValueEffective = DeserializeOne(s);
                 else
@@ -148,6 +154,10 @@ namespace CmdArgs
                     CheckValue(DefaultValue, DefaultValue.ToString(), false);
                     DefaultValueEffective = DefaultValue;
                 }
+            }
+            else if (UseDefWhenNoArg)
+                throw new ConfException(
+                    $"Argument [{Name}]: {nameof(UseDefWhenNoArg)} is true but DefaultValue is not provided");
         }
 
 

@@ -13,6 +13,7 @@ namespace CmdArgs
     public interface IValuedArgument : IArgument
     {
         object DefaultValue { get; }
+        bool UseDefWhenNoArg { get; }
         object[] AllowedValues { get; }
         string RegularExpression { get; }
 

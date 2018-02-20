@@ -109,10 +109,17 @@ namespace CmdArgs
                 }
             }
 
-            foreach (Binding binding in bindings.bindings)
-                if (binding.Argument.Mandatory && !binding.AlreadySet)
+            foreach (Binding binding in bindings.bindings.Where(x => !x.AlreadySet))
+            {
+                Argument a = binding.Argument;
+                if (a is ValuedArgument va)
+                    if (va.UseDefWhenNoArg && va.DefaultValue != null)
+                        SetVal(bindings, binding, va.Name, null);
+
+                if (!binding.AlreadySet && a.Mandatory)
                     throw new CmdException(
-                        $"Argument [{binding.Argument.Name}] is mandatory but is not set");
+                        $"Argument [{a.Name}] is mandatory but is not set");
+            }
         }
 
 

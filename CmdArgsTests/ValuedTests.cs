@@ -69,16 +69,104 @@ namespace CmdArgsTests
         }
 
 
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfDefErrorMandatory
+        {
+            [ValuedArgument('a', "deftrue", DefaultValue = 5, Mandatory = true,
+                UseDefWhenNoArg = true)]
+            public int? DefTrue { get; set; }
+        }
+
+
+
+        [Test]
+        public void TestDefErrorMandatory()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfDefErrorMandatory>(new[] {"--deftrue"}));
+        }
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfDefErrorUsenoarg
+        {
+            [ValuedArgument('a', "deftrue", UseDefWhenNoArg = true)]
+            public int? DefTrue { get; set; }
+        }
+
+
+
+        [Test]
+        public void TestDefErrorUsenoarg()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfDefErrorUsenoarg>(new[] {"--deftrue"}));
+        }
+
 
         ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfDef
+        {
+            [ValuedArgument('a', "deftrue", DefaultValue = 5, UseDefWhenNoArg = true)]
+            public int? DefTrue { get; set; }
+
+
+            [ValuedArgument('b', "deffalse", DefaultValue = 5, UseDefWhenNoArg = false)]
+            public int? DefFalse { get; set; }
+        }
+
+
+
+        [Test]
+        public void TestDefVal()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfDef> rv = p.ParseCommandLine<ConfDef>(new[] {"--deftrue"});
+
+            Assert.AreEqual(actual: rv.Args.DefTrue, expected: 5);
+            Assert.AreEqual(actual: rv.Args.DefFalse, expected: null);
+        }
+
+
+        [Test]
+        public void TestDefVal1()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfDef> rv = p.ParseCommandLine<ConfDef>(new[] {"--deffalse"});
+
+            Assert.AreEqual(actual: rv.Args.DefTrue, expected: 5);
+            Assert.AreEqual(actual: rv.Args.DefFalse, expected: 5);
+        }
+
+
+        [Test]
+        public void TestDefValNoArg()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfDef> rv = p.ParseCommandLine<ConfDef>(new string[] { });
+
+            Assert.AreEqual(actual: rv.Args.DefTrue, expected: 5);
+            Assert.AreEqual(actual: rv.Args.DefFalse, expected: null);
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
         class Conf
         {
             [ValuedArgument('s', "some")]
             public int Some { get; set; }
-
-
-            [ValuedArgument('e', "def", DefaultValue = 5)]
-            public int Def { get; set; }
 
 
             [ValuedArgument('d', "dummy")]
@@ -118,16 +206,6 @@ namespace CmdArgsTests
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-d", "11"});
 
             Assert.AreEqual(11L, rv.Args.Dummy);
-        }
-
-
-        [Test]
-        public void TestDefVal()
-        {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--def"});
-
-            Assert.AreEqual(actual: rv.Args.Def, expected: 5);
         }
 
 

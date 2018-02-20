@@ -42,6 +42,12 @@ namespace CmdArgs
             set => ((ValuedArgument) Argument).DefaultValue = value;
         }
 
+        public bool UseDefWhenNoArg
+        {
+            get => ((ValuedArgument) Argument).UseDefWhenNoArg;
+            set => ((ValuedArgument) Argument).UseDefWhenNoArg = value;
+        }
+
 
         public object[] AllowedValues
         {
