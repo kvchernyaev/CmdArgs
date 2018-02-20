@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="AllowedValuesTests.cs" />
     <Compile Include="ConfExceptionTests.cs" />
+    <Compile Include="FileTests.cs" />
     <Compile Include="MandatoryAndMultipleTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SwitchTests.cs" />

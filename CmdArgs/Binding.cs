@@ -61,9 +61,9 @@ namespace CmdArgs
             var va = (ValuedArgument) Argument;
             if (values == null || values.Length == 0)
             {
-                if (va.DefaultValue == null)
+                if (va.DefaultValueEffective == null)
                     throw new CmdException($"Value for argument [{va.Name}] is needed");
-                SetValueInternal(va.DefaultValue);
+                SetValueInternal(va.DefaultValueEffective);
             }
             else if (va.ValueIsCollection)
                 DeserializeAndSetValue(values);
@@ -98,7 +98,7 @@ namespace CmdArgs
             }
 
             object collectionValue = array ?? list;
-            va.CheckAllowedCollection(collectionValue);
+            va.CheckValuesCollection(collectionValue);
             SetValueInternal(collectionValue);
         }
 
@@ -120,6 +120,18 @@ namespace CmdArgs
                 argVal = va.DeserializeOne(val);
             }
             catch (FormatException ex)
+            {
+                throw new CmdException(
+                    $"Value [{val}] can not be converted to type {va.ValueType.Name}",
+                    ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                throw new CmdException(
+                    $"Value [{val}] can not be converted to type {va.ValueType.Name}",
+                    ex);
+            }
+            catch (ArgumentException ex)
             {
                 throw new CmdException(
                     $"Value [{val}] can not be converted to type {va.ValueType.Name}",

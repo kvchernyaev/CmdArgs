@@ -44,25 +44,8 @@ namespace CmdArgs
                 SetValueType(src);
             }
 
-            CheckFieldType(null);
-
-            // type of DefaultValue
-            if (DefaultValue != null && !ValueType.IsInstanceOfType(DefaultValue))
-                throw new ConfException(
-                    $"Argument [{Name}]: {nameof(DefaultValue)} must be of type {ValueType.Name}, but it is of type {DefaultValue.GetType().Name}");
-
-            // type of AllowedValues
-            if (AllowedValues?.Length > 0)
-            {
-                foreach (object allowedValue in AllowedValues)
-                    if (!ValueType.IsInstanceOfType(allowedValue))
-                        throw new ConfException(
-                            $"Argument [{Name}]: allowed value [{allowedValue}] must be of type {ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
-
-                if (DefaultValue != null && !AllowedValues.Contains(DefaultValue))
-                    throw new ConfException(
-                        $"Argument [{Name}]: default value [{DefaultValue}[ is not allowed");
-            }
+            CheckFieldType(ValueType);
+            CheckDefaultAndAllowedTypes();
 
             void SetValueType(Type t)
             {
@@ -81,6 +64,7 @@ namespace CmdArgs
 
 
         public object DefaultValue { get; set; }
+        public object DefaultValueEffective { get; set; }
         public object[] AllowedValues { get; set; }
         public string RegularExpression { get; set; }
 
@@ -122,46 +106,115 @@ namespace CmdArgs
 
         public override void CheckFieldType(Type fieldType)
         {
-            if (!ValueType.IsEnum && !AllowedTypes.Contains(ValueType))
+            // тут разрешены все енумы и примитивные типы
+            if (!fieldType.IsEnum && !AllowedTypes.Contains(fieldType))
                 throw new ConfException(
-                    $"Argument [{Name}]: field type {ValueType.Name} is not allowed");
+                    $"Argument [{Name}]: field type {fieldType.Name} is not allowed");
+        }
+
+
+        public void CheckDefaultAndAllowedTypes()
+        {
+            if (AllowedValues?.Length > 0)
+                foreach (object allowedValue in AllowedValues)
+                    CheckAllowedValueType(allowedValue, "allowed value");
+
+            CheckDefaultValue();
+        }
+
+
+        protected virtual void CheckAllowedValueType(object allowedValue, string hint)
+        {
+            if (allowedValue == null) return;
+
+            if (!ValueType.IsInstanceOfType(allowedValue))
+                throw new ConfException(
+                    $"Argument [{Name}]: {hint} [{allowedValue}] must be of type {ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
+            CheckByPredicates(allowedValue, allowedValue.ToString(), false);
+            if (allowedValue is string s)
+                CheckByRegex(s, false);
+        }
+
+
+        void CheckDefaultValue()
+        {
+            CheckAllowedValueType(DefaultValue, nameof(DefaultValue));
+
+            if (DefaultValue != null)
+                if (DefaultValue is string s)
+                    DefaultValueEffective = DeserializeOne(s);
+                else
+                {
+                    CheckValue(DefaultValue, DefaultValue.ToString(), false);
+                    DefaultValueEffective = DefaultValue;
+                }
         }
 
 
         /// <returns>Instance of ValueType</returns>
-        public virtual object DeserializeOne(string val)
+        public virtual object DeserializeOne(string valueSrc)
         {
-            object rv;
+            object obj;
             if (ValueType.IsEnum)
-                rv = Enum.Parse(ValueType, val, true);
+                obj = Enum.Parse(ValueType, valueSrc, true);
             else
-                rv = Convert.ChangeType(val, ValueType, Culture ?? CultureInfo.InvariantCulture);
+                obj = Convert.ChangeType(valueSrc, ValueType,
+                    Culture ?? CultureInfo.InvariantCulture);
 
-            CheckAllowedOne(rv, val);
-            return rv;
+            CheckValue(obj, valueSrc, true);
+            return obj;
         }
 
 
-        void CheckAllowedOne(object value, string valueSrc)
+        #region check value
+        protected virtual void CheckValue(object value, string valueSrc, bool isFromCmd)
         {
-            if (AllowedValues?.Length > 0 && !AllowedValues.Contains(value))
-                throw new CmdException($"Argument [{Name}]: value [{valueSrc}] is not allowed");
+            CheckByAllowedValues(value, valueSrc, isFromCmd);
+            CheckByPredicates(value, valueSrc, isFromCmd);
+            CheckByRegex(valueSrc, isFromCmd);
+        }
+
+
+        protected virtual void CheckByRegex(string valueSrc, bool isFromCmd)
+        {
+            if (!string.IsNullOrWhiteSpace(RegularExpression) &&
+                !Regex.IsMatch(valueSrc, RegularExpression))
+            {
+                string e =
+                    $"Argument [{Name}] value [{valueSrc}] is not allowed by regular expression";
+                throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
+            }
+        }
+
+
+        protected void CheckByPredicates(object value, string valueSrc, bool isFromCmd)
+        {
             if (ValuePredicatesForOne?.Count > 0)
                 foreach (Delegate predicate in ValuePredicatesForOne)
                 {
                     var ok = (bool) predicate.DynamicInvoke(value);
                     if (!ok)
-                        throw new CmdException(
-                            $"Argument [{Name}] value [{valueSrc}] is not allowed by predicate");
+                    {
+                        string e =
+                            $"Argument [{Name}] value [{valueSrc}] is not allowed by predicate";
+                        throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
+                    }
                 }
-            if (!string.IsNullOrWhiteSpace(RegularExpression))
-                if (!Regex.IsMatch(valueSrc, RegularExpression))
-                    throw new CmdException(
-                        $"Argument [{Name}] value [{valueSrc}] is not allowed by regular expression");
         }
 
 
-        public void CheckAllowedCollection(object collectionValue)
+        protected virtual void CheckByAllowedValues(object value, string valueSrc, bool isFromCmd)
+        {
+            if (AllowedValues?.Length > 0 &&
+                AllowedValues.Where(x => x != null).All(x => !object.Equals(x, value)))
+            {
+                string e = $"Argument [{Name}]: value [{valueSrc}] is not allowed";
+                throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
+            }
+        }
+
+
+        public void CheckValuesCollection(object collectionValue)
         {
             if (ValuePredicatesForCollection?.Count > 0)
                 foreach (Delegate predicate in ValuePredicatesForCollection)
@@ -172,5 +225,6 @@ namespace CmdArgs
                             $"Argument [{Name}] value is not allowed by collection predicate");
                 }
         }
+        #endregion
     }
 }

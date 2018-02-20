@@ -130,7 +130,7 @@ namespace CmdArgsTests
 
         class ConfAllowedBadAllowedType
         {
-            [ValuedArgument('b', AllowedValues = new object[] {"6", "2"}, DefaultValue = 5)]
+            [ValuedArgument('b', AllowedValues = new object[] {"6", "2"}, DefaultValue = 2)]
             public int B;
         }
 
@@ -149,7 +149,7 @@ namespace CmdArgsTests
 
 
 
-        class ConfAllowedBadDefault
+        class ConfBadDefaultByAllowed
         {
             [ValuedArgument('b', AllowedValues = new object[] {7, 8, 9}, DefaultValue = 5)]
             public int B;
@@ -158,11 +158,52 @@ namespace CmdArgsTests
 
 
         [Test]
-        public void TestAllowedBadDefault()
+        public void TestBadDefaultByAllowed()
         {
             var p = new CmdArgsParser();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfAllowedBadDefault>(new[] {"-b"}));
+                p.ParseCommandLine<ConfBadDefaultByAllowed>(new[] {"-b"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfAllowedBadDefaultByRegex
+        {
+            [ValuedArgument('b', DefaultValue = "qwer", RegularExpression = @"\d")]
+            public string B;
+        }
+
+
+
+        [Test]
+        public void TestAllowedBadDefaultByRegex()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfAllowedBadDefaultByRegex>(new[] {"-b"}));
+        }
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfAllowedBadAllowedByRegex
+        {
+            [ValuedArgument('b', AllowedValues = new object[] {"a2", "asdf", "b4"},
+                RegularExpression = @"\d")]
+            public string B;
+        }
+
+
+
+        [Test]
+        public void TestAllowedBadAllowedByRegex()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfAllowedBadAllowedByRegex>(new[] {"-b"}));
         }
 
 
@@ -195,7 +236,7 @@ namespace CmdArgsTests
             ConfPredicate.B_Predicate_set = i => i % 3 == 0;
 
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfPredicate>(new[] { "--IntPredicate", "25"}));
+                p.ParseCommandLine<ConfPredicate>(new[] {"--IntPredicate", "25"}));
         }
 
 

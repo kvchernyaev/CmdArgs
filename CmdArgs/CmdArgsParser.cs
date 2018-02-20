@@ -222,16 +222,24 @@ namespace CmdArgs
 
                 if (attr.Argument is ValuedArgument va)
                 {
-                    Type fieldType = GetFieldType(mi);
-                    va.SetTypeAndCheck(fieldType); // CheckFieldType inside
+                    if (attr.Argument is FileArgument fa)
+                    {
+                        va.CheckFieldType(GetFieldType(mi));
+                        va.CheckDefaultAndAllowedTypes();
+                    }
+                    else
+                    {
+                        Type fieldType = GetFieldType(mi);
+                        va.SetTypeAndCheck(fieldType); // CheckFieldType inside
 
-                    Tuple<List<Delegate>, List<Delegate>> predicates =
-                        GetPredicates(miPredicates, mi.Name, va, target);
+                        Tuple<List<Delegate>, List<Delegate>> predicates =
+                            GetPredicates(miPredicates, mi.Name, va, target);
 
-                    va.ValuePredicatesForCollection = predicates?.Item1;
-                    va.ValuePredicatesForOne = predicates?.Item2;
+                        va.ValuePredicatesForCollection = predicates?.Item1;
+                        va.ValuePredicatesForOne = predicates?.Item2;
 
-                    if (va.Culture == null) va.Culture = this._culture;
+                        if (va.Culture == null) va.Culture = this._culture;
+                    }
                 }
                 else
                     attr.Argument.CheckFieldType(GetFieldType(mi));

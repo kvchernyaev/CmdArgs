@@ -14,6 +14,10 @@ namespace CmdArgs
     public class ValuedArgumentAttribute : ArgumentAttribute, IValuedArgument
     {
         #region ctors
+        public ValuedArgumentAttribute(ValuedArgument va)
+            : base(va) { }
+
+
         public ValuedArgumentAttribute(char shortName)
             : base(new ValuedArgument(shortName)) { }
 
