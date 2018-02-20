@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="Arguments\Argument.cs" />
     <Compile Include="Arguments\ArgumentAttribute.cs" />
+    <Compile Include="Arguments\DirArgument.cs" />
+    <Compile Include="Arguments\DirArgumentAttribute.cs" />
     <Compile Include="Arguments\FileArgument.cs" />
     <Compile Include="Arguments\FileArgumentAttribute.cs" />
     <Compile Include="Arguments\IArgument.cs" />

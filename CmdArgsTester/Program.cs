@@ -1,6 +1,7 @@
 ﻿#region usings
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -77,6 +78,11 @@ namespace CmdArgsTester
             r = p.ParseCommandLine<ConfFullExample>(new[] {"--StringAllowed", "asd"});
             Assert.Throws<CmdException>(() =>
                 p.ParseCommandLine<ConfFullExample>(new[] {"--StringAllowed", "kjhpj"}));
+
+            // features also: MustExists, DefaultValue, AllowedValues work too (string)
+            r = p.ParseCommandLine<ConfFullExample>(new[]
+                    {"--FileConfig", "./CmdArgsTester.exe.config"});
+            r = p.ParseCommandLine<ConfFullExample>(new[] {"--DirConfig", "./DirectoryName"});
         }
 
 
@@ -123,7 +129,7 @@ namespace CmdArgsTester
             public static Predicate<int> IntPredicated_Predicate_closure;
 
 
-            [ValuedArgument('r', "IntArrayPredicated")]
+            [ValuedArgument('p', "IntArrayPredicated")]
             public int[] IntArrayPredicated;
 
 
@@ -131,13 +137,20 @@ namespace CmdArgsTester
             public static Predicate<int[]> IntArrayPredicated_Predicate_array = i => i.Length > 2;
 
 
-            [ValuedArgument('p', "StringAllowed", AllowedValues = new object[] {"asd", "rt"},
+            [ValuedArgument('q', "StringAllowed", AllowedValues = new object[] {"asd", "rt"},
                 DefaultValue = "rt")]
             public string StringAllowed;
 
 
-            [ValuedArgument('q', "myenum", AllowedValues = new object[] {MyEnum.One, MyEnum.Three})]
+            [ValuedArgument('r', "myenum", AllowedValues = new object[] {MyEnum.One, MyEnum.Three})]
             public MyEnum MyEnumVal;
+
+
+            [FileArgument('s', "FileConfig", DefaultValue = "./CmdArgsTester.exe.config")]
+            public FileInfo FileConfig;
+
+
+            [FileArgument('t', "DirConfig")] public FileInfo DirConfig;
         }
 
 

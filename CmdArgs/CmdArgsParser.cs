@@ -182,7 +182,7 @@ namespace CmdArgs
                 .ToList();
             if (l.Count > 0)
                 throw new ConfException(string.Join("; ",
-                    l.Select(x => $"LongName {x.Key} is given {x.Count()} times")));
+                    l.Select(x => $"LongName [{x.Key}] is given {x.Count()} times")));
 
             List<IGrouping<char?, char?>> s = binds.Select(x => x.Argument.ShortName)
                 .Where(x => x.HasValue)
@@ -192,7 +192,7 @@ namespace CmdArgs
                 .ToList();
             if (s.Count > 0)
                 throw new ConfException(string.Join("; ",
-                    l.Select(x => $"ShortName {x.Key} is given {x.Count()} times")));
+                    s.Select(x => $"ShortName [{x.Key}] is given {x.Count()} times")));
         }
 
 
@@ -221,8 +221,7 @@ namespace CmdArgs
                     continue;
 
                 if (attr.Argument is ValuedArgument va)
-                {
-                    if (attr.Argument is FileArgument fa)
+                    if (attr.Argument is FileArgument || attr.Argument is DirArgument)
                     {
                         va.CheckFieldType(GetFieldType(mi));
                         va.CheckDefaultAndAllowedTypes();
@@ -240,7 +239,6 @@ namespace CmdArgs
 
                         if (va.Culture == null) va.Culture = this._culture;
                     }
-                }
                 else
                     attr.Argument.CheckFieldType(GetFieldType(mi));
 

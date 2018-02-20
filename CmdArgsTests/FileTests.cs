@@ -177,12 +177,5 @@ namespace CmdArgsTests
 
 
         //////////////////////////////////////////////////////////////
-
-
-
-        class ConfDir
-        {
-            [ValuedArgument('d')] public DirectoryInfo Dir;
-        }
     }
 }
