@@ -241,6 +241,10 @@ namespace CmdArgs
 
                     va.ValuePredicatesForCollection = predicates?.Item1;
                     va.ValuePredicatesForOne = predicates?.Item2;
+
+                    // check allowed for predicateone
+                    // check def for predicateone, predicatecol
+                    va.CheckDefaultAndAllowedValues();
                 }
                 else
                     attr.Argument.CheckFieldType(GetFieldType(mi));

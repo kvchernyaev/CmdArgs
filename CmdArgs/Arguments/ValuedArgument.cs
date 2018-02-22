@@ -39,7 +39,7 @@ namespace CmdArgs
             }
 
             CheckFieldType(ValueType);
-            CheckDefaultAndAllowedTypes();
+            CheckDefaultAndAllowedValues();
 
             void SetValueType(Type t)
             {
@@ -145,7 +145,7 @@ namespace CmdArgs
         }
 
 
-        public void CheckDefaultAndAllowedTypes()
+        public void CheckDefaultAndAllowedValues()
         {
             if (AllowedValues?.Length > 0)
                 foreach (object allowedValue in AllowedValues)
@@ -193,7 +193,7 @@ namespace CmdArgs
                     l.Add(o);
                 }
                 DefaultValueEffective = CreateSameCollection(l);
-                CheckValuesCollection(DefaultValueEffective);
+                CheckValuesCollection(DefaultValueEffective, false);
             }
             else
             {
@@ -203,6 +203,8 @@ namespace CmdArgs
                 object o = DeserializeAndCheckValueMaybeString(DefaultValue, false);
                 DefaultValueEffective =
                     ValueIsCollection ? CreateSameCollection(new List<object> {o}) : o;
+                if (ValueIsCollection)
+                    CheckValuesCollection(DefaultValueEffective, false);
             }
         }
 
@@ -244,15 +246,18 @@ namespace CmdArgs
         }
 
 
-        public void CheckValuesCollection(object collectionValue)
+        public void CheckValuesCollection(object collectionValue, bool isFromCmd)
         {
             if (ValuePredicatesForCollection?.Count > 0)
                 foreach (Delegate predicate in ValuePredicatesForCollection)
                 {
                     var ok = (bool) predicate.DynamicInvoke(collectionValue);
                     if (!ok)
-                        throw new CmdException(
-                            $"Argument [{Name}] value is not allowed by collection predicate");
+                    {
+                        string e =
+                            $"Argument [{Name}] value is not allowed by collection predicate";
+                        throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
+                    }
                 }
         }
 

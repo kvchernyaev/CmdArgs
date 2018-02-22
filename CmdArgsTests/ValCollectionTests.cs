@@ -119,5 +119,53 @@ namespace CmdArgsTests
 
 
         ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfDefPredicateBad
+        {
+            [ValuedArgument('a', DefaultValue = 2)]
+            public int[] Array { get; set; }
+
+
+            public static Predicate<int> Array_Predicate = x => x > 10;
+        }
+
+
+
+        [Test]
+        public void TestDefPredicateBad()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(
+                () => p.ParseCommandLine<ConfDefPredicateBad>(new[] {"-i"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
+        class ConfDefPredicateCollectionBad
+        {
+            [ValuedArgument('a', DefaultValue = 2)]
+            public int[] Array { get; set; }
+
+
+            public static Predicate<int[]> Array_Predicate = x => x.Length > 1;
+        }
+
+
+
+        [Test]
+        public void TestDefPredicateCollectionBad()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfDefPredicateCollectionBad>(new[] {"-i"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
     }
 }

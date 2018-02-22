@@ -87,7 +87,7 @@ namespace CmdArgs
             }
             object collectionValue = va.CreateSameCollection(l);
 
-            va.CheckValuesCollection(collectionValue);
+            va.CheckValuesCollection(collectionValue, true);
             SetValueInternal(collectionValue);
         }
 

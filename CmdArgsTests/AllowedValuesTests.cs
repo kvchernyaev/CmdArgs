@@ -359,6 +359,30 @@ namespace CmdArgsTests
 
 
 
+        class ConfAllowedPredicate
+        {
+            [ValuedArgument('b', AllowedValues = new object[] {4, 5, 6})]
+            public int? B;
+
+
+            public static Predicate<int?> B_Predicate = i => i > 5;
+        }
+
+
+
+        [Test]
+        public void TestAllowedPredicate()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfAllowedPredicate>(new[] {"-b", "6"}));
+        }
+
+
+        ////////////////////////////////////////////////////////////////
+
+
+
         class ConfPredicateBadTypeAr
         {
             [ValuedArgument('b')] public int[] B;
@@ -437,5 +461,8 @@ namespace CmdArgsTests
             Assert.Throws<CmdException>(() =>
                 p.ParseCommandLine<ConfRegexInt>(new[] {"-b", "218"}));
         }
+
+
+        ////////////////////////////////////////////////////////////////
     }
 }
