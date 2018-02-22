@@ -25,6 +25,7 @@ namespace CmdArgs
 
         public override void CheckFieldType(Type fieldType)
         {
+            throw new NotImplementedException();
             //if (/*нет метода public static P Deserialize(string[] values)*/)
             //    throw new ConfException($"Argument [{Name}]: class {fieldType.Name} does not contain method \"public static {fieldType.Name} Deserialize(string[] values)\"");
         }
