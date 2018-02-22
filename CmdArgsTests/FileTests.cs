@@ -177,5 +177,52 @@ namespace CmdArgsTests
 
 
         //////////////////////////////////////////////////////////////
+
+
+
+        class ConfArray
+        {
+            [FileArgument('f')] public FileInfo[] Files;
+        }
+
+
+
+        [Test]
+        public void TestArray()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfArray> res =
+                p.ParseCommandLine<ConfArray>(new[] {"-f", "./a.conf", "./b.conf"});
+            var fi = new FileInfo("./a");
+            string path = fi.DirectoryName;
+            Assert.IsTrue(res.Args.Files.Select(x => x.FullName)
+                .SequenceEqual(new[] {Path.Combine(path, "a.conf"), Path.Combine(path, "b.conf")}));
+        }
+
+
+        //////////////////////////////////////////////////////////////
+
+
+
+        class ConfList
+        {
+            [FileArgument('f')] public List<FileInfo> Files;
+        }
+
+
+
+        [Test]
+        public void TestList()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfList> res = p.ParseCommandLine<ConfList>(new[] {"-f", "./a.conf", "./b.conf"});
+            var fi = new FileInfo("./a");
+            string path = fi.DirectoryName;
+            Assert.IsTrue(res.Args.Files.Select(x => x.FullName)
+                .SequenceEqual(new[] {Path.Combine(path, "a.conf"), Path.Combine(path, "b.conf")}));
+        }
+
+
+        //////////////////////////////////////////////////////////////
     }
 }

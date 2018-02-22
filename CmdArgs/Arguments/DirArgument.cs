@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CmdArgs
 {
-    public class DirArgument : ValuedArgument
+    public class DirArgument : ConcreteArgument<DirectoryInfo>
     {
         #region ctors
         public DirArgument(char shortName) : base(shortName) { }
@@ -27,64 +27,34 @@ namespace CmdArgs
         public bool MustExists { get; set; }
 
 
-        public override Type ValueType
-        {
-            get => typeof(DirectoryInfo);
-            set => throw new Exception();
-        }
+        protected override bool CheckAllowedValueType(Type t) =>
+            t == typeof(string) || t == typeof(DirectoryInfo);
 
 
-        public override void CheckFieldType(Type fieldType)
-        {
-            if (fieldType != ValueType)
-                throw new ConfException(
-                    $"Argument [{Name}]: field type must be {ValueType.Name} but {fieldType.Name} provided");
-        }
-
-
-        protected override void CheckAllowedValueType(object allowedValue, string hint)
-        {
-            if (allowedValue != null &&
-                allowedValue.GetType() != typeof(string) &&
-                allowedValue.GetType() != typeof(DirectoryInfo))
-                throw new ConfException(
-                    $"Argument [{Name}]: {hint} [{allowedValue}] must be of type string or DirectoryInfo, but it is of type {allowedValue.GetType().Name}");
-        }
-
-
-        public override object DeserializeOne(string valueSrc)
+        #region value
+        protected override object DeserializeOne(string valueSrc)
         {
             var fi = new DirectoryInfo(valueSrc);
-            CheckValue(fi, valueSrc, true);
             return fi;
         }
 
 
-        protected override void CheckValue(object value, string valueSrc, bool isFromCmd)
+        protected override void CheckValueAdditional(object value, string valueSrc, bool isFromCmd)
         {
-            base.CheckValue(value, valueSrc, isFromCmd);
             if (MustExists)
             {
-                DirectoryInfo fi = value is DirectoryInfo info
-                    ? info
-                    : new DirectoryInfo((string) value);
+                var fi = (DirectoryInfo) DeserializeOneOrPass(value);
                 if (!fi.Exists)
-                    throw new CmdException($"Argument [{Name}]: Dir [{valueSrc}] must be exists");
+                {
+                    string e = $"Argument [{Name}]: Dir [{valueSrc}] must be exists";
+                    throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
+                }
             }
         }
 
 
-        protected override void CheckByAllowedValues(object value, string valueSrc, bool isFromCmd)
-        {
-            DirectoryInfo fiSrc =
-                value is DirectoryInfo info ? info : new DirectoryInfo((string) value);
-            if (AllowedValues?.Length > 0 &&
-                AllowedValues.Select(x => new DirectoryInfo((string) x))
-                    .All(fi => fi.FullName != fiSrc.FullName))
-            {
-                string e = $"Argument [{Name}]: value [{valueSrc}] is not allowed";
-                throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
-            }
-        }
+        protected override bool Compare(DirectoryInfo value, DirectoryInfo allowedValue) =>
+            value.FullName == allowedValue.FullName;
+        #endregion
     }
 }

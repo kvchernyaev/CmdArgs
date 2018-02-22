@@ -79,25 +79,14 @@ namespace CmdArgs
         {
             var va = (ValuedArgument) Argument;
 
-            Array array = null;
-            IList list = null;
-
-            if (va.ValueCollectionType.IsArray)
-                array = Array.CreateInstance(va.ValueNullableType ?? va.ValueType,
-                    vals.Length);
-            else
-                list = (IList) Activator.CreateInstance(va.ValueCollectionType);
-
-            for (var i = 0; i < vals.Length; i++)
+            var l = new List<object>(vals.Length);
+            foreach (string val in vals)
             {
-                string val = vals[i];
                 object argVal = DeserializeOne(va, val);
-
-                if (va.ValueCollectionType.IsArray) array.SetValue(argVal, i);
-                else list.Add(argVal);
+                l.Add(argVal);
             }
+            object collectionValue = va.CreateSameCollection(l);
 
-            object collectionValue = array ?? list;
             va.CheckValuesCollection(collectionValue);
             SetValueInternal(collectionValue);
         }
@@ -112,12 +101,15 @@ namespace CmdArgs
         }
 
 
+        /// <summary>
+        /// and check
+        /// </summary>
         static object DeserializeOne(ValuedArgument va, string val)
         {
             object argVal;
             try
             {
-                argVal = va.DeserializeOne(val);
+                argVal = va.DeserializeAndCheckValueMaybeString(val, true);
             }
             catch (FormatException ex)
             {

@@ -1,5 +1,6 @@
 ﻿#region usings
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -25,18 +26,11 @@ namespace CmdArgs
 
         public void SetTypeAndCheck(Type src)
         {
-            if (src.IsArray)
+            Type elemtype = GetElemTypeIfCollection(src);
+            if (elemtype != null)
             {
                 ValueCollectionType = src;
-                SetValueType(src.GetElementType());
-            }
-            //if (typeof(IEnumerable<>).IsAssignableFrom(src)) // open vs closed generic =(
-            else if (src.IsGenericType && src.GetInterfaces()
-                         .Any(t => t.IsGenericType &&
-                                   t.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
-            {
-                ValueCollectionType = src;
-                SetValueType(src.GenericTypeArguments[0]);
+                SetValueType(elemtype);
             }
             else
             {
@@ -61,6 +55,43 @@ namespace CmdArgs
                 }
             }
         }
+
+
+        public object CreateSameCollection(List<object> values)
+        {
+            Array array = null;
+            IList list = null;
+
+            if (ValueCollectionType.IsArray)
+                array = Array.CreateInstance(GetElemTypeIfCollection(ValueCollectionType),
+                    values.Count);
+            else
+                list = (IList) Activator.CreateInstance(ValueCollectionType);
+
+            for (var i = 0; i < values.Count; i++)
+                if (ValueCollectionType.IsArray)
+                    array.SetValue(values[i], i);
+                else
+                    list.Add(values[i]);
+
+            return array ?? list;
+        }
+
+
+        protected static Type GetElemTypeIfCollection(Type t)
+        {
+            if (t.IsArray) return t.GetElementType();
+            if (t.IsGenericType && t.GetInterfaces()
+                    .Any(i => i.IsGenericType &&
+                              i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+                return t.GenericTypeArguments[0];
+
+            return null;
+        }
+
+
+        protected static bool IsCollection(object o) =>
+            GetElemTypeIfCollection(o.GetType()) != null;
 
 
         public object DefaultValue { get; set; }
@@ -110,7 +141,7 @@ namespace CmdArgs
             // тут разрешены все енумы и примитивные типы
             if (!fieldType.IsEnum && !AllowedTypes.Contains(fieldType))
                 throw new ConfException(
-                    $"Argument [{Name}]: field type {fieldType.Name} is not allowed");
+                    $"Argument [{Name}]: field type {fieldType.Name} is not allowed in {nameof(ValuedArgument)}. Use other argument types");
         }
 
 
@@ -118,74 +149,119 @@ namespace CmdArgs
         {
             if (AllowedValues?.Length > 0)
                 foreach (object allowedValue in AllowedValues)
-                    CheckAllowedValueType(allowedValue, "allowed value");
+                {
+                    if (!CheckAllowedValueType(allowedValue.GetType()))
+                        throw new ConfException(
+                            $"Argument [{Name}]: allowed value must be of type {ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
+                    DeserializeAndCheckValueMaybeString(allowedValue, false);
+                }
 
             CheckDefaultValue();
         }
 
 
-        protected virtual void CheckAllowedValueType(object allowedValue, string hint)
-        {
-            if (allowedValue == null) return;
-
-            if (!ValueType.IsInstanceOfType(allowedValue))
-                throw new ConfException(
-                    $"Argument [{Name}]: {hint} [{allowedValue}] must be of type {ValueType.Name}, but it is of type {allowedValue.GetType().Name}");
-            CheckByPredicates(allowedValue, allowedValue.ToString(), false);
-            if (allowedValue is string s)
-                CheckByRegex(s, false);
-        }
+        protected virtual bool CheckAllowedValueType(Type t) => ValueType.IsAssignableFrom(t);
 
 
         void CheckDefaultValue()
         {
-            CheckAllowedValueType(DefaultValue, nameof(DefaultValue));
-
-            if (DefaultValue != null)
+            if (DefaultValue == null)
             {
-                if (Mandatory && UseDefWhenNoArg)
+                if (UseDefWhenNoArg)
                     throw new ConfException(
-                        $"Argument [{Name}]: {nameof(DefaultValue)} is provided, {nameof(UseDefWhenNoArg)} is true, but {nameof(Mandatory)} is true");
-
-                if (DefaultValue is string s)
-                    DefaultValueEffective = DeserializeOne(s);
-                else
-                {
-                    CheckValue(DefaultValue, DefaultValue.ToString(), false);
-                    DefaultValueEffective = DefaultValue;
-                }
+                        $"Argument [{Name}]: {nameof(UseDefWhenNoArg)} is true but DefaultValue is not provided");
+                return;
             }
-            else if (UseDefWhenNoArg)
+
+            if (Mandatory && UseDefWhenNoArg)
                 throw new ConfException(
-                    $"Argument [{Name}]: {nameof(UseDefWhenNoArg)} is true but DefaultValue is not provided");
+                    $"Argument [{Name}]: {nameof(DefaultValue)} is provided, {nameof(UseDefWhenNoArg)} is true, but {nameof(Mandatory)} is true");
+
+            if (!ValueIsCollection && IsCollection(DefaultValue))
+                throw new ConfException(
+                    $"DefaultValue cannot be a collection if field type is not a collection");
+
+            if (IsCollection(DefaultValue))
+            {
+                var l = new List<object>();
+                foreach (object defValItem in (IEnumerable) DefaultValue)
+                {
+                    if (!CheckAllowedValueType(defValItem.GetType()))
+                        throw new ConfException(
+                            $"Argument [{Name}]: DefaultValue must be of type {ValueType.Name} or collection of it, but it is of type {defValItem.GetType().Name}");
+                    object o = DeserializeAndCheckValueMaybeString(defValItem, false);
+                    l.Add(o);
+                }
+                DefaultValueEffective = CreateSameCollection(l);
+                CheckValuesCollection(DefaultValueEffective);
+            }
+            else
+            {
+                if (!CheckAllowedValueType(DefaultValue.GetType()))
+                    throw new ConfException(
+                        $"Argument [{Name}]: DefaultValue must be of type {ValueType.Name} or collection of it, but it is of type {DefaultValue.GetType().Name}");
+                object o = DeserializeAndCheckValueMaybeString(DefaultValue, false);
+                DefaultValueEffective =
+                    ValueIsCollection ? CreateSameCollection(new List<object> {o}) : o;
+            }
         }
 
 
         /// <returns>Instance of ValueType</returns>
-        public virtual object DeserializeOne(string valueSrc)
+        protected virtual object DeserializeOne(string valueSrc)
         {
-            object obj;
-            if (ValueType.IsEnum)
-                obj = Enum.Parse(ValueType, valueSrc, true);
-            else
-                obj = Convert.ChangeType(valueSrc, ValueType,
-                    Culture ?? CultureInfo.InvariantCulture);
-
-            CheckValue(obj, valueSrc, true);
+            object obj = ValueType.IsEnum
+                ? Enum.Parse(ValueType, valueSrc, true)
+                : Convert.ChangeType(valueSrc, ValueType, Culture ?? CultureInfo.InvariantCulture);
             return obj;
         }
 
 
-        #region check value
-        protected virtual void CheckValue(object value, string valueSrc, bool isFromCmd)
+        protected object DeserializeOneOrPass(object value) => ValueType.IsInstanceOfType(value)
+            ? value
+            : DeserializeOne((string) value);
+
+
+        #region check value or collection of values
+        public object DeserializeAndCheckValueMaybeString(object v, bool isFromCmd)
+        {
+            object o = DeserializeOneOrPass(v);
+            CheckValue(o, v.ToString(), isFromCmd);
+            return o;
+        }
+
+
+        /// <summary>
+        /// Проверить значение, уже десериализованное. Не проверяется тип.
+        /// </summary>
+        void CheckValue(object value, string valueSrc, bool isFromCmd)
         {
             CheckByAllowedValues(value, valueSrc, isFromCmd);
             CheckByPredicates(value, valueSrc, isFromCmd);
             CheckByRegex(valueSrc, isFromCmd);
+
+            CheckValueAdditional(value, valueSrc, isFromCmd);
         }
 
 
-        protected virtual void CheckByRegex(string valueSrc, bool isFromCmd)
+        public void CheckValuesCollection(object collectionValue)
+        {
+            if (ValuePredicatesForCollection?.Count > 0)
+                foreach (Delegate predicate in ValuePredicatesForCollection)
+                {
+                    var ok = (bool) predicate.DynamicInvoke(collectionValue);
+                    if (!ok)
+                        throw new CmdException(
+                            $"Argument [{Name}] value is not allowed by collection predicate");
+                }
+        }
+
+
+        protected virtual void
+            CheckValueAdditional(object value, string valueSrc, bool isFromCmd) { }
+
+
+        void CheckByRegex(string valueSrc, bool isFromCmd)
         {
             if (!string.IsNullOrWhiteSpace(RegularExpression) &&
                 !Regex.IsMatch(valueSrc, RegularExpression))
@@ -197,7 +273,7 @@ namespace CmdArgs
         }
 
 
-        protected void CheckByPredicates(object value, string valueSrc, bool isFromCmd)
+        void CheckByPredicates(object value, string valueSrc, bool isFromCmd)
         {
             if (ValuePredicatesForOne?.Count > 0)
                 foreach (Delegate predicate in ValuePredicatesForOne)
@@ -213,10 +289,13 @@ namespace CmdArgs
         }
 
 
-        protected virtual void CheckByAllowedValues(object value, string valueSrc, bool isFromCmd)
+        /// <summary>
+        /// Проверить значение, уже десериализованное, на вхождение в AllowedValues
+        /// </summary>
+        void CheckByAllowedValues(object value, string valueSrc, bool isFromCmd)
         {
             if (AllowedValues?.Length > 0 &&
-                AllowedValues.Where(x => x != null).All(x => !object.Equals(x, value)))
+                AllowedValues.Where(x => x != null).All(x => !CompareWithAllowedValue(value, x)))
             {
                 string e = $"Argument [{Name}]: value [{valueSrc}] is not allowed";
                 throw isFromCmd ? (Exception) new CmdException(e) : new ConfException(e);
@@ -224,17 +303,8 @@ namespace CmdArgs
         }
 
 
-        public void CheckValuesCollection(object collectionValue)
-        {
-            if (ValuePredicatesForCollection?.Count > 0)
-                foreach (Delegate predicate in ValuePredicatesForCollection)
-                {
-                    var ok = (bool) predicate.DynamicInvoke(collectionValue);
-                    if (!ok)
-                        throw new CmdException(
-                            $"Argument [{Name}] value is not allowed by collection predicate");
-                }
-        }
+        protected virtual bool CompareWithAllowedValue(object value, object allowedValue) =>
+            object.Equals(allowedValue, value);
         #endregion
     }
 }

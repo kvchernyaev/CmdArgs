@@ -219,6 +219,7 @@ namespace CmdArgs
                 return miType.IsGenericType &&
                        miType.GetGenericTypeDefinition() == typeof(Predicate<>);
             }).ToList();
+
             foreach (MemberInfo mi in mis)
             {
                 var attr = (ArgumentAttribute) mi
@@ -228,24 +229,19 @@ namespace CmdArgs
                     continue;
 
                 if (attr.Argument is ValuedArgument va)
-                    if (attr.Argument is FileArgument || attr.Argument is DirArgument)
-                    {
-                        va.CheckFieldType(GetFieldType(mi));
-                        va.CheckDefaultAndAllowedTypes();
-                    }
-                    else
-                    {
-                        Type fieldType = GetFieldType(mi);
-                        va.SetTypeAndCheck(fieldType); // CheckFieldType inside
+                {
+                    if (va.Culture == null) va.Culture = this._culture;
 
-                        Tuple<List<Delegate>, List<Delegate>> predicates =
-                            GetPredicates(miPredicates, mi.Name, va, target);
+                    Type fieldType = GetFieldType(mi);
+                    va.SetTypeAndCheck(fieldType);
 
-                        va.ValuePredicatesForCollection = predicates?.Item1;
-                        va.ValuePredicatesForOne = predicates?.Item2;
+                    // predicates are dependent on type
+                    Tuple<List<Delegate>, List<Delegate>> predicates =
+                        GetPredicates(miPredicates, mi.Name, va, target);
 
-                        if (va.Culture == null) va.Culture = this._culture;
-                    }
+                    va.ValuePredicatesForCollection = predicates?.Item1;
+                    va.ValuePredicatesForOne = predicates?.Item2;
+                }
                 else
                     attr.Argument.CheckFieldType(GetFieldType(mi));
 
@@ -253,6 +249,19 @@ namespace CmdArgs
             }
 
             return rv;
+        }
+
+
+        static bool IsTypeDerivedFromGenericType(Type typeToCheck, Type genericType)
+        {
+            if (typeToCheck == typeof(object))
+                return false;
+            if (typeToCheck == null)
+                return false;
+            if (typeToCheck.IsGenericType &&
+                typeToCheck.GetGenericTypeDefinition() == genericType)
+                return true;
+            return IsTypeDerivedFromGenericType(typeToCheck.BaseType, genericType);
         }
 
 
