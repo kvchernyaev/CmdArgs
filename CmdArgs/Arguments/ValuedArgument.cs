@@ -128,7 +128,10 @@ namespace CmdArgs
         internal override bool CanHaveValue => true;
 
 
-        static readonly Type[] AllowedTypes =
+        static readonly Type[] AllowedTypes = {typeof(Guid), typeof(DateTime), typeof(TimeSpan)};
+
+
+        static readonly Type[] AllowedTypesTrivial =
             {
                 typeof(char), typeof(string), typeof(byte), typeof(short), typeof(int),
                 typeof(long), typeof(bool), typeof(uint), typeof(ulong), typeof(ushort),
@@ -139,7 +142,8 @@ namespace CmdArgs
         public override void CheckFieldType(Type fieldType)
         {
             // тут разрешены все енумы и примитивные типы
-            if (!fieldType.IsEnum && !AllowedTypes.Contains(fieldType))
+            if (!fieldType.IsEnum && !AllowedTypesTrivial.Contains(fieldType) &&
+                !AllowedTypes.Contains(fieldType))
                 throw new ConfException(
                     $"Argument [{Name}]: field type {fieldType.Name} is not allowed in {nameof(ValuedArgument)}. Use other argument types");
         }
@@ -212,9 +216,16 @@ namespace CmdArgs
         /// <returns>Instance of ValueType</returns>
         protected virtual object DeserializeOne(string valueSrc)
         {
-            object obj = ValueType.IsEnum
-                ? Enum.Parse(ValueType, valueSrc, true)
-                : Convert.ChangeType(valueSrc, ValueType, Culture ?? CultureInfo.InvariantCulture);
+            object obj;
+            if (ValueType.IsEnum)
+                obj = Enum.Parse(ValueType, valueSrc, true);
+            else if (ValueType == typeof(Guid))
+                obj = Guid.Parse(valueSrc);
+            else if (ValueType == typeof(TimeSpan))
+                obj = TimeSpan.Parse(valueSrc);
+            else
+                obj = Convert.ChangeType(valueSrc, ValueType,
+                    Culture ?? CultureInfo.InvariantCulture);
             return obj;
         }
 

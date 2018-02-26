@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllowedValuesTests.cs" />
+    <Compile Include="SimpleTypesTests.cs" />
     <Compile Include="SwitchConfExceptionTests.cs" />
     <Compile Include="CustomTypesTests.cs" />
     <Compile Include="DirTests.cs" />
