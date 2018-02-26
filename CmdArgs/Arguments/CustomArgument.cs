@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -25,33 +26,54 @@ namespace CmdArgs
 
         public override void CheckFieldType(Type fieldType)
         {
-            throw new NotImplementedException();
-            //if (/*нет метода public static P Deserialize(string[] values)*/)
-            //    throw new ConfException($"Argument [{Name}]: class {fieldType.Name} does not contain method \"public static {fieldType.Name} Deserialize(string[] values)\"");
+            MethodInfo deserMi = GetMethodDeserialize(fieldType);
+            if (deserMi == null)
+                throw new ConfException(
+                    $"Argument [{Name}]: class {fieldType.Name} does not contain method \"public static {fieldType.Name} Deserialize(string value)\"");
         }
 
 
-        protected override bool CheckAllowedValueType(Type t)
-        {
-            throw new NotImplementedException();
-        }
+        protected override bool CheckAllowedValueType(Type t) =>
+            t == typeof(string) || t == ValueType;
 
 
         protected override object DeserializeOne(string valueSrc)
         {
-            throw new NotImplementedException();
-        }
-
-
-        protected override void CheckValueAdditional(object value, string valueSrc, bool isFromCmd)
-        {
-            throw new NotImplementedException();
+            MethodInfo deserMi = GetMethodDeserialize(ValueType);
+            try
+            {
+                object o = deserMi.Invoke(null, new object[] {valueSrc});
+                return o;
+            }
+            catch (TargetInvocationException e)
+            {
+                throw new CmdException(
+                    $"Argument [{Name}]: value [{valueSrc}] can not be converted to type {ValueType.Name}",
+                    e);
+            }
         }
 
 
         protected override bool CompareWithAllowedValue(object value, object allowedValue)
         {
-            throw new NotImplementedException();
+            object v = DeserializeOneOrPass(value);
+            object a = DeserializeOneOrPass(allowedValue);
+
+            bool rv = object.Equals(a, v);
+            return rv;
+        }
+
+
+        static MethodInfo GetMethodDeserialize(Type fieldType)
+        {
+            List<MethodInfo> ms = fieldType.GetMethods().Where(x =>
+                {
+                    ParameterInfo[] pis = x.GetParameters();
+                    return x.IsStatic && x.Name == "Deserialize" && x.ReturnType == fieldType
+                           && pis.Length == 1 && pis[0].ParameterType == typeof(string);
+                })
+                .ToList();
+            return ms.FirstOrDefault();
         }
     }
 }

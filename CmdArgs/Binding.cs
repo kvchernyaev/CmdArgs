@@ -114,19 +114,19 @@ namespace CmdArgs
             catch (FormatException ex)
             {
                 throw new CmdException(
-                    $"Value [{val}] can not be converted to type {va.ValueType.Name}",
+                    $"Argument [{va.Name}]: value [{val}] can not be converted to type {va.ValueType.Name}",
                     ex);
             }
             catch (NotSupportedException ex)
             {
                 throw new CmdException(
-                    $"Value [{val}] can not be converted to type {va.ValueType.Name}",
+                    $"Argument [{va.Name}]: value [{val}] can not be converted to type {va.ValueType.Name}",
                     ex);
             }
             catch (ArgumentException ex)
             {
                 throw new CmdException(
-                    $"Value [{val}] can not be converted to type {va.ValueType.Name}",
+                    $"Argument [{va.Name}]: value [{val}] can not be converted to type {va.ValueType.Name}",
                     ex);
             }
             return argVal;

@@ -26,6 +26,28 @@ namespace CmdArgsTests
             public int B;
 
 
+            #region generated
+            protected bool Equals(P other) => A == other.A && B == other.B;
+
+
+            public override bool Equals(object obj)
+            {
+                if (obj is null) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                return obj.GetType() == this.GetType() && Equals((P) obj);
+            }
+
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return (A * 397) ^ B;
+                }
+            }
+            #endregion
+
+
             public static P Deserialize(string value)
             {
                 string[] ss = value.Split(':');
@@ -88,8 +110,8 @@ namespace CmdArgsTests
             Assert.AreEqual(59, res.Args.L[0].A);
             Assert.AreEqual(84, res.Args.L[0].B);
 
-            Assert.AreEqual(58, res.Args.L[0].A);
-            Assert.AreEqual(81, res.Args.L[0].B);
+            Assert.AreEqual(58, res.Args.L[1].A);
+            Assert.AreEqual(81, res.Args.L[1].B);
         }
 
 
@@ -163,7 +185,7 @@ namespace CmdArgsTests
         public void TestAllowedNo()
         {
             var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfAllowed>(new[] {"-p", "1:3"}));
+            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfAllowed>(new[] {"-p", "1:5"}));
         }
 
 
