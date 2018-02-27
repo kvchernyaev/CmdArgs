@@ -18,7 +18,7 @@ namespace CmdArgsTester
         static void Main(string[] a)
         {
             var p = new CmdArgsParser();
-            p.AllowUnknownArgument = false;
+            p.AllowUnknownArguments = false;
             p.AllowAdditionalArguments = false;
 
             Res<ConfFullExample> r;

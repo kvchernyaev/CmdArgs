@@ -18,7 +18,7 @@ namespace CmdArgsTests
         [Test]
         public void TestForbidShortname()
         {
-            var p = new CmdArgsParser {AllowUnknownArgument = false};
+            var p = new CmdArgsParser {AllowUnknownArguments = false};
             Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-u"}));
         }
 
@@ -26,7 +26,7 @@ namespace CmdArgsTests
         [Test]
         public void TestForbidLongname()
         {
-            var p = new CmdArgsParser {AllowUnknownArgument = false};
+            var p = new CmdArgsParser {AllowUnknownArguments = false};
             Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"--unk"}));
         }
 
@@ -34,7 +34,7 @@ namespace CmdArgsTests
         [Test]
         public void TestShortname()
         {
-            var p = new CmdArgsParser {AllowUnknownArgument = true};
+            var p = new CmdArgsParser {AllowUnknownArguments = true};
 
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-u"});
             Check(rv, s: false, d: false, unk: "u");
@@ -44,7 +44,7 @@ namespace CmdArgsTests
         [Test]
         public void TestLongname()
         {
-            var p = new CmdArgsParser {AllowUnknownArgument = true};
+            var p = new CmdArgsParser {AllowUnknownArguments = true};
 
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--unk"});
             Check(rv, s: false, d: false, unk: "unk");
@@ -54,7 +54,7 @@ namespace CmdArgsTests
         [Test]
         public void TestValues()
         {
-            var p = new CmdArgsParser {AllowUnknownArgument = true};
+            var p = new CmdArgsParser {AllowUnknownArguments = true};
 
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--unk", "val1", "val2"});
             Check(rv, s: false, d: false, unk: "unk", vals: new[] {"val1", "val2"});

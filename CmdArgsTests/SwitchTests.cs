@@ -61,7 +61,7 @@ namespace CmdArgsTests
         {
             var p = new CmdArgs.CmdArgsParser
                 {
-                    AllowUnknownArgument = false
+                    AllowUnknownArguments = false
                 };
 
             Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-S"}));
@@ -73,7 +73,7 @@ namespace CmdArgsTests
         {
             var p = new CmdArgs.CmdArgsParser
                 {
-                    AllowUnknownArgument = true
+                    AllowUnknownArguments = true
                 };
 
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-d"});

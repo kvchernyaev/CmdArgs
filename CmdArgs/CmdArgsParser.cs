@@ -22,7 +22,10 @@ namespace CmdArgs
         #region configuration
         // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
         public bool LongNameIgnoreCase { get; set; } = true;
-        public bool AllowUnknownArgument { get; set; } = true;
+        public bool AllowUnknownArguments { get; set; } = true;
+
+
+        public bool UseEqualitySyntax { get; set; } = false;
 
 
         public bool AllowAdditionalArguments { get; set; } = true;
@@ -60,7 +63,7 @@ namespace CmdArgs
             --contexts="Light,prod, sync_prod,sync" ^
                 update ^
              */
-            var bindings = new Bindings<T>
+            var bindings = new Bindings<T>(AllowUnknownArguments)
                 {
                     Args = res,
                     bindings = ExtractArgumentAttributes(res.Args)
@@ -70,43 +73,13 @@ namespace CmdArgs
             for (var i = 0; i < args.Length;)
             {
                 string arg = args[i];
-                ++i;
 
-                string[] values = GetValues(args, ref i);
-                if (IsArgLong(arg))
-                {
-                    string longName = arg.Substring(2);
-                    SetVal(bindings, longName, values);
-                }
-                else if (IsArgShort(arg))
-                {
-                    string shortNames = arg.Substring(1);
-                    if (shortNames.Length == 1)
-                    {
-                        char shortName = shortNames[0];
-                        SetVal(bindings, shortName, values);
-                    }
-                    else if (shortNames.Length > 1)
-                    {
-                        if (values.Length > 0)
-                            throw new CmdException(
-                                $"Values after multiple shortnames can not be processed");
-
-                        foreach (char shortName in shortNames)
-                            SetVal(bindings, shortName, values);
-                    }
-                    else
-                        // "-"
-                        throw new CmdException($"Argument [{arg}] can not be processed");
-                }
-                else
-                {
+                if (!TryParseArgument(args, i, out i, bindings))
                     if (AllowAdditionalArguments)
                         res.AdditionalArguments.Add(arg);
                     else
                         throw new CmdException(
                             $"Unnamed arguments is prohibited ({arg}). Use {nameof(AllowAdditionalArguments)} setting?");
-                }
             }
 
             foreach (Binding binding in bindings.bindings.Where(x => !x.AlreadySet))
@@ -114,7 +87,7 @@ namespace CmdArgs
                 Argument a = binding.Argument;
                 if (a is ValuedArgument va)
                     if (va.UseDefWhenNoArg && va.DefaultValue != null)
-                        SetVal(bindings, binding, va.Name, null);
+                        binding.SetVal(null);
 
                 if (!binding.AlreadySet && a.Mandatory)
                     throw new CmdException(
@@ -123,45 +96,64 @@ namespace CmdArgs
         }
 
 
-        void SetVal<T>(Bindings<T> bindings, char shortName, string[] values)
+        bool TryParseArgument<T>(string[] args, int curI, out int nextI, Bindings<T> bindings)
         {
-            if (!Argument.CheckShortName(shortName))
-                throw new CmdException($"ShortName [{shortName}] is not allowed");
-            Binding binding = bindings.bindings.FirstOrDefault(x => x.Is(shortName));
-            SetVal(bindings, binding, shortName.ToString(), values);
-        }
+            // (longName | shortNames) & values
+            string arg = args[curI];
+            nextI = curI + 1;
 
+            if (IsArgLong(arg))
+            {
+                string[] values = GetValues(args, arg, true, ref nextI, out string longName);
+                bindings.SetVal(longName, values);
+            }
+            else if (IsArgShort(arg))
+            {
+                string[] values = GetValues(args, arg, false, ref nextI, out string shortNames);
+                if (shortNames.Length == 1)
+                    bindings.SetVal(shortNames[0], values);
+                else if (shortNames.Length > 1)
+                {
+                    if (values.Length > 0)
+                        throw new CmdException(
+                            $"Values after multiple shortnames can not be processed");
 
-        void SetVal<T>(Bindings<T> bindings, string longName, string[] values)
-        {
-            Binding binding = bindings.bindings.FirstOrDefault(x => x.Is(longName));
-            SetVal(bindings, binding, longName, values);
-        }
-
-
-        void SetVal<T>(Bindings<T> bindings, Binding binding, string name, string[] values)
-        {
-            if (binding == null)
-                if (AllowUnknownArgument)
-                    bindings.Args.UnknownArguments.Add(new Tuple<string, string[]>(name, values));
+                    foreach (char shortName in shortNames)
+                        bindings.SetVal(shortName, null);
+                }
                 else
-                    throw new CmdException($"Unknown parameter: {name}");
+                    // "-"
+                    throw new CmdException($"Argument [{arg}] can not be processed");
+            }
+            else return false;
+
+            return true;
+        }
+
+
+        static readonly char[] EqualityModeValSeparators = {';', ',', ' '};
+
+
+        string[] GetValues(string[] args, string arg, bool islong, ref int nextI, out string argName)
+        {
+            argName = arg.Substring(islong ? 2 : 1);
+            if (UseEqualitySyntax)
+            {
+                int ieq = argName.IndexOf("=");
+                if (ieq < 0) return null;
+
+                string vals = argName.Substring(ieq + 1);
+                argName = argName.Substring(0, ieq);
+                string[] rv = vals.Split(EqualityModeValSeparators,
+                    StringSplitOptions.RemoveEmptyEntries);
+                return rv;
+            }
             else
             {
-                if (binding.AlreadySet && !binding.Argument.AllowMultiple)
-                    throw new CmdException(
-                        $"Argument [{binding.Argument.Name}] can not be set multiple times");
-
-                binding.ParseAndSetArgumentValues(values);
+                string[] rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
+                nextI += rv.Length;
+                return rv;
             }
-        }
-
-
-        static string[] GetValues(string[] args, ref int i)
-        {
-            string[] rv = args.Skip(i).TakeWhile(s => !IsArg(s)).ToArray();
-            i += rv.Length;
-            return rv;
         }
 
 

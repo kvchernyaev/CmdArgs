@@ -47,7 +47,17 @@ namespace CmdArgs
             Argument.ShortName.HasValue && Argument.ShortName.Value == shortName;
 
 
-        public void ParseAndSetArgumentValues(string[] values)
+        public void SetVal(string[] values)
+        {
+            if (AlreadySet && !Argument.AllowMultiple)
+                throw new CmdException(
+                    $"Argument [{Argument.Name}] can not be set multiple times");
+
+            ParseAndSetArgumentValues(values);
+        }
+
+
+        void ParseAndSetArgumentValues(string[] values)
         {
             if (!Argument.CanHaveValue) // is it Switch
             {
