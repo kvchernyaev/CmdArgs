@@ -53,6 +53,8 @@
     <Compile Include="Arguments\IValuedArgument.cs" />
     <Compile Include="Arguments\SwitchArgument.cs" />
     <Compile Include="Arguments\SwitchArgumentAttribute.cs" />
+    <Compile Include="Arguments\UnstrictlyConfArgument.cs" />
+    <Compile Include="Arguments\UnstrictlyConfArgumentAttribute.cs" />
     <Compile Include="Arguments\ValuedArgument.cs" />
     <Compile Include="Arguments\ValuedArgumentAttribute.cs" />
     <Compile Include="Binding.cs" />
@@ -63,6 +65,7 @@
     <Compile Include="Exceptions\CmdException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Res.cs" />
+    <Compile Include="UnstrictlyConf.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

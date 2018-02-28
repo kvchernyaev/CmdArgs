@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SwitchTests.cs" />
     <Compile Include="UnknownArgTests.cs" />
+    <Compile Include="UnstrictlyConfTests.cs" />
     <Compile Include="ValCollectionTests.cs" />
     <Compile Include="ValuedTests.cs" />
     <Compile Include="ValueNullableTests.cs" />

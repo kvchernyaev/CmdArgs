@@ -96,7 +96,7 @@ namespace CmdArgs
 
         public object DefaultValue { get; set; }
         public bool UseDefWhenNoArg { get; set; }
-        public object DefaultValueEffective { get; set; }
+        public object DefaultValueEffective { get; protected set; }
         public object[] AllowedValues { get; set; }
         public string RegularExpression { get; set; }
 
