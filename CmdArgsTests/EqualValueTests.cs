@@ -17,9 +17,6 @@ namespace CmdArgsTests
     public class EqualValueTests
     {
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfEmpty
         {
             [ValuedArgument('a', DefaultValue = "def")]
@@ -39,10 +36,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfOne
         {
             [ValuedArgument('a')] public string A;
@@ -62,10 +57,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfArray
         {
             [ValuedArgument('a')] public string[] A;
@@ -96,10 +89,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfAdd
         {
             [ValuedArgument('a')] public string A;
@@ -114,12 +105,26 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             p.UseEqualitySyntax = true;
             p.AllowAdditionalArguments = true;
-            Res<ConfAdd> r = p.ParseCommandLine<ConfAdd>(new[] 
+            Res<ConfAdd> r = p.ParseCommandLine<ConfAdd>(new[]
                     {"-a=asdf", "noval", "-b=qewr", "jkli", "-34"});
             Assert.AreEqual("asdf", r.Args.A);
             Assert.AreEqual("qewr", r.Args.B);
 
             Assert.IsTrue(new[] {"noval", "jkli", "-34"}.SequenceEqual(r.AdditionalArguments));
+        }
+
+
+        [Test]
+        public void TestMixed()
+        {
+            var p = new CmdArgsParser();
+            p.UseEqualitySyntax = false;
+            Res<ConfAdd> r = p.ParseCommandLine<ConfAdd>(new[]
+                    {"-a=asdf", "-b", "jkli"});
+            Assert.AreEqual("asdf", r.Args.A);
+            Assert.AreEqual("jkli", r.Args.B);
+
+            Assert.IsEmpty(r.AdditionalArguments);
         }
 
 

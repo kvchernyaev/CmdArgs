@@ -158,7 +158,7 @@ namespace CmdArgsTests
         {
             var p = new CmdArgsParser();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] { "--DEFINE=" }));
+                p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINE="}));
         }
 
 
@@ -167,7 +167,7 @@ namespace CmdArgsTests
         {
             var p = new CmdArgsParser();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] { "--DEFINE=val" }));
+                p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINE=val"}));
         }
 
 

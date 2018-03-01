@@ -145,20 +145,22 @@ namespace CmdArgs
                 != null)
                 return rv;
 
-            if (UseEqualitySyntax)
+            argName.SplitPairByEquality(out string name, out string valuesString);
+            if (valuesString == null)
             {
-                argName.SplitPairByEquality(out string name, out string valuesString);
-                if (valuesString == null) return null;
-                argName = name;
+                if (UseEqualitySyntax)
+                    return null;
+
                 b = bindings.FindBinding(argName, islong);
-                rv = valuesString.Split(EqualityModeValSeparators,
-                    StringSplitOptions.RemoveEmptyEntries);
+                rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
+                nextI += rv.Length;
                 return rv;
             }
 
+            argName = name;
             b = bindings.FindBinding(argName, islong);
-            rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
-            nextI += rv.Length;
+            rv = valuesString.Split(EqualityModeValSeparators,
+                StringSplitOptions.RemoveEmptyEntries);
             return rv;
         }
 
