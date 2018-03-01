@@ -25,7 +25,7 @@ namespace CmdArgs
         public bool AllowUnknownArguments { get; set; } = true;
 
 
-        public bool UseEqualitySyntax { get; set; } = false;
+        public bool UseOnlyEqualitySyntax { get; set; } = false;
 
 
         public bool AllowAdditionalArguments { get; set; } = true;
@@ -148,7 +148,7 @@ namespace CmdArgs
             argName.SplitPairByEquality(out string name, out string valuesString);
             if (valuesString == null)
             {
-                if (UseEqualitySyntax)
+                if (UseOnlyEqualitySyntax)
                     return null;
 
                 b = bindings.FindBinding(argName, islong);
