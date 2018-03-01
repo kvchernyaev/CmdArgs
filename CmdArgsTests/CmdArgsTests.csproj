@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdditionalArgumentsTests.cs" />
     <Compile Include="AllowedValuesTests.cs" />
     <Compile Include="EqualValueTests.cs" />
     <Compile Include="SimpleTypesTests.cs" />

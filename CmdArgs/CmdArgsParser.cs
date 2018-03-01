@@ -115,7 +115,7 @@ namespace CmdArgs
                     bindings.SetVal(b, values, shortNames[0].ToString());
                 else if (shortNames.Length > 1)
                 {
-                    if (values.Length > 0)
+                    if (values?.Length > 0)
                         throw new CmdException(
                             $"Values after multiple shortnames can not be processed");
 

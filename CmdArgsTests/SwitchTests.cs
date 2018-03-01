@@ -15,6 +15,7 @@ namespace CmdArgsTests
     [TestFixture]
     public class SwitchTests
     {
+        ////////////////////////////////////////////////////////////////
         class ConfWrongType
         {
             [SwitchArgument('s')]
@@ -31,10 +32,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class Conf
         {
             [SwitchArgument('s', "some", "some description")]
@@ -159,10 +158,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfFields
         {
             [SwitchArgument('s', "some", "some description")]
@@ -178,19 +175,22 @@ namespace CmdArgsTests
         [Test]
         public void TestFields()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgsParser();
 
             Res<ConfFields> rv = p.ParseCommandLine<ConfFields>(new[] {"-s"});
             Check(rv, s: true, d: false);
         }
 
 
-        static void Check(Res<ConfFields> rv, bool s, bool d)
+        static void Check(Res<ConfFields> rv, bool s, bool d, string[] addit = null)
         {
             Assert.AreEqual(rv.Args.Dummy, d);
             Assert.AreEqual(rv.Args.Some, s);
             Assert.IsEmpty(rv.UnknownArguments);
-            Assert.IsEmpty(rv.AdditionalArguments);
+            if (addit == null)
+                Assert.IsEmpty(rv.AdditionalArguments);
+            else
+                Assert.IsTrue(addit.SequenceEqual(rv.AdditionalArguments));
         }
     }
 }
