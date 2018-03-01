@@ -18,6 +18,25 @@ namespace CmdArgsTests
     [TestFixture]
     public class FileTests
     {
+        //////////////////////////////////////////////////////////////
+        class ConfWrongFieldType
+        {
+            [FileArgument('f')] public string File;
+        }
+
+
+
+        [Test]
+        public void TestWrongFieldType()
+        {
+            var p = new CmdArgsParser();
+            Assert.Throws<ConfException>(() =>
+                p.ParseCommandLine<ConfWrongFieldType>(new[] {"-f", "./sadf"}));
+        }
+
+
+
+        //////////////////////////////////////////////////////////////
         class ConfWrongArgType
         {
             [ValuedArgument('f')] public FileInfo File;
@@ -100,10 +119,8 @@ namespace CmdArgsTests
         }
 
 
+
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfFileDefaultValue
         {
             [FileArgument('f', DefaultValue = "./prog.conf")]
@@ -121,10 +138,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfFileAllowedValuesBadType
         {
             [FileArgument('f', AllowedValues = new object[] {"./asdf", 2})]
@@ -142,10 +157,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfFileAllowedValues
         {
             [FileArgument('f', AllowedValues = new object[] {"./asdf", "a.conf"})]
@@ -176,10 +189,8 @@ namespace CmdArgsTests
         }
 
 
+
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfArray
         {
             [FileArgument('f')] public FileInfo[] Files;
@@ -200,10 +211,8 @@ namespace CmdArgsTests
         }
 
 
+
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfList
         {
             [FileArgument('f')] public List<FileInfo> Files;

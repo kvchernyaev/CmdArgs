@@ -18,11 +18,24 @@ namespace CmdArgs
         {
             public string Name;
             public string Value;
+
+
+            public UnstrictlyConfItem(string name, string value)
+            {
+                Name = name;
+                Value = value;
+            }
         }
 
 
 
-        readonly List<UnstrictlyConfItem> _list;
+        List<UnstrictlyConfItem> _list;
+
+
+        public UnstrictlyConf()
+        {
+            _list = new List<UnstrictlyConfItem>();
+        }
 
 
         public UnstrictlyConf(List<UnstrictlyConfItem> list)
@@ -41,5 +54,12 @@ namespace CmdArgs
 
 
         public UnstrictlyConfItem this[int i] => _list[i];
+
+
+        internal void Add(UnstrictlyConfItem item)
+        {
+            if (_list == null) _list = new List<UnstrictlyConfItem>();
+            _list.Add(item);
+        }
     }
 }

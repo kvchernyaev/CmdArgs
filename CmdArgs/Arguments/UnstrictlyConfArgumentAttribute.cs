@@ -18,20 +18,20 @@ namespace CmdArgs
 
 
         public UnstrictlyConfArgumentAttribute(char shortName)
-            : base(new ValuedArgument(shortName)) { }
+            : base(new UnstrictlyConfArgument(shortName)) { }
 
 
         public UnstrictlyConfArgumentAttribute(string longName)
-            : base(new ValuedArgument(longName)) { }
+            : base(new UnstrictlyConfArgument(longName)) { }
 
 
         public UnstrictlyConfArgumentAttribute(char shortName, string longName)
-            : base(new ValuedArgument(shortName, longName)) { }
+            : base(new UnstrictlyConfArgument(shortName, longName)) { }
 
 
         public UnstrictlyConfArgumentAttribute(char shortName, string longName,
             string description)
-            : base(new ValuedArgument(shortName, longName, description)) { }
+            : base(new UnstrictlyConfArgument(shortName, longName, description)) { }
         #endregion
     }
 }

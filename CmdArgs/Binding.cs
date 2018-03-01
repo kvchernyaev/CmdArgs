@@ -2,17 +2,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Markup;
 #endregion
 
 
 
 namespace CmdArgs
 {
+    [DebuggerDisplay("{Argument} {_miTarget}")]
     internal class Binding
     {
         public Argument Argument { get; }
@@ -59,7 +62,7 @@ namespace CmdArgs
 
         void ParseAndSetArgumentValues(string[] values)
         {
-            if (!Argument.CanHaveValue) // is it Switch
+            if (!Argument.CanHaveValue) // it is Switch
             {
                 if (values != null && values.Length > 0)
                     throw new CmdException(
@@ -68,21 +71,37 @@ namespace CmdArgs
                 return;
             }
 
-            var va = (ValuedArgument) Argument;
-            if (values == null || values.Length == 0)
+            if (Argument is UnstrictlyConfArgument uca)
             {
-                if (va.DefaultValueEffective == null)
-                    throw new CmdException($"Value for argument [{va.Name}] is needed");
-                SetValueInternal(va.DefaultValueEffective);
+                var conf = (UnstrictlyConf) GetValueInternal();
+                if (conf == null) SetValueInternal(conf = new UnstrictlyConf());
+
+                values[0].SplitPairByEquality(out string name, out string value);
+                if (string.IsNullOrEmpty(name))
+                    throw new CmdException(
+                        $"Argument [{uca.Name}] : {values[0]} must be with name part");
+                conf.Add(new UnstrictlyConf.UnstrictlyConfItem(name, value));
             }
-            else if (va.ValueIsCollection)
-                DeserializeAndSetValue(values);
-            else if (values.Length == 1)
-                DeserializeAndSetValue(values[0]);
+            else if (Argument is ValuedArgument va)
+                if (values == null || values.Length == 0)
+                {
+                    if (va.DefaultValueEffective == null)
+                        throw new CmdException($"Value for argument [{va.Name}] is needed");
+                    SetValueInternal(va.DefaultValueEffective);
+                }
+                else if (va.ValueIsCollection)
+                    DeserializeAndSetValue(values);
+                else if (values.Length == 1)
+                    DeserializeAndSetValue(values[0]);
+                else
+                    throw new CmdException(
+                        $"Argument [{va.Name}] can not be a collection, but passed [{string.Join(",", values)}]");
             else
-                throw new CmdException(
-                    $"Argument [{va.Name}] can not be a collection, but passed [{string.Join(",", values)}]");
+                throw new ConfException(
+                    $"Argument [{Argument.Name}] - type {Argument.GetType().Name} is not supported");
         }
+
+
 
 
         void DeserializeAndSetValue(string[] vals)
@@ -158,6 +177,21 @@ namespace CmdArgs
                     $"Binding.SetValueInternal(): type [{_miTarget.GetType().Name}] is not accepted");
 
             AlreadySet = true;
+        }
+
+
+        object GetValueInternal()
+        {
+            object rv;
+            if (_miTarget is FieldInfo fi)
+                rv = fi.GetValue(_targetConfObject);
+            else if (_miTarget is PropertyInfo pi)
+                rv = pi.GetValue(_targetConfObject);
+            else
+                throw new ConfException(
+                    $"Binding.SetValueInternal(): type [{_miTarget.GetType().Name}] is not accepted");
+
+            return rv;
         }
     }
 }

@@ -98,20 +98,21 @@ namespace CmdArgs
 
         bool TryParseArgument<T>(string[] args, int curI, out int nextI, Bindings<T> bindings)
         {
-            // (longName | shortNames) & values
             string arg = args[curI];
             nextI = curI + 1;
 
             if (IsArgLong(arg))
             {
-                string[] values = GetValues(args, arg, true, ref nextI, out string longName);
-                bindings.SetVal(longName, values);
+                string[] values = GetValues(bindings, args, arg, true, ref nextI,
+                    out string name, out Binding b);
+                bindings.SetVal(b, values, name);
             }
             else if (IsArgShort(arg))
             {
-                string[] values = GetValues(args, arg, false, ref nextI, out string shortNames);
+                string[] values = GetValues(bindings, args, arg, false, ref nextI,
+                    out string shortNames, out Binding b);
                 if (shortNames.Length == 1)
-                    bindings.SetVal(shortNames[0], values);
+                    bindings.SetVal(b, values, shortNames[0].ToString());
                 else if (shortNames.Length > 1)
                 {
                     if (values.Length > 0)
@@ -134,33 +135,39 @@ namespace CmdArgs
         static readonly char[] EqualityModeValSeparators = {';', ',', ' '};
 
 
-        string[] GetValues(string[] args, string arg, bool islong, ref int nextI, out string argName)
+        string[] GetValues<T>(Bindings<T> bindings, string[] args, string arg, bool islong,
+            ref int nextI,
+            out string argName, out Binding b)
         {
             argName = arg.Substring(islong ? 2 : 1);
+            string[] rv;
+            if ((b = UnstrictlyConfArgument.IsSyntax(ref argName, bindings, islong, out rv))
+                != null)
+                return rv;
+
             if (UseEqualitySyntax)
             {
-                int ieq = argName.IndexOf("=");
-                if (ieq < 0) return null;
-
-                string vals = argName.Substring(ieq + 1);
-                argName = argName.Substring(0, ieq);
-                string[] rv = vals.Split(EqualityModeValSeparators,
+                argName.SplitPairByEquality(out string name, out string valuesString);
+                if (valuesString == null) return null;
+                argName = name;
+                b = bindings.FindBinding(argName, islong);
+                rv = valuesString.Split(EqualityModeValSeparators,
                     StringSplitOptions.RemoveEmptyEntries);
                 return rv;
             }
-            else
-            {
-                string[] rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
-                nextI += rv.Length;
-                return rv;
-            }
+
+            b = bindings.FindBinding(argName, islong);
+            rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
+            nextI += rv.Length;
+            return rv;
         }
 
 
         static bool IsArg(string arg) => IsArgLong(arg) || IsArgShort(arg);
 
 
-        static bool IsArgLong(string arg) => arg.StartsWith("--");
+        static bool IsArgLong(string arg) =>
+            arg.StartsWith("--") && arg.Length >= 3 && Argument.CheckLongName(arg[2]);
 
 
         static bool IsArgShort(string arg) =>

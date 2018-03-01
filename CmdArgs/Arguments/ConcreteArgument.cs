@@ -25,20 +25,14 @@ namespace CmdArgs
         #endregion
 
 
-        //public override Type ValueType
-        //{
-        //    get => typeof(T);
-        //    set => throw new Exception();
-        //}
-
-
         public override void CheckFieldType(Type fieldType)
         {
             Type elemType;
-            if (!(fieldType == ValueType ||
-                  (elemType = GetElemTypeIfCollection(fieldType)) == null || elemType == ValueType))
+            Type valueTypeMustBe = typeof(T);
+            if (!(fieldType == valueTypeMustBe ||
+                  (elemType = GetElemTypeIfCollection(fieldType)) != null && elemType == valueTypeMustBe))
                 throw new ConfException(
-                    $"Argument [{Name}]: field type must be {ValueType.Name} or collection of it but {fieldType.Name} provided");
+                    $"Argument [{Name}]: field type must be {valueTypeMustBe.Name} or collection of it but {fieldType.Name} provided");
         }
 
 

@@ -37,6 +37,7 @@ namespace CmdArgs
         }
 
 
+        internal static bool CheckLongName(char longNameStart) => char.IsLetter(longNameStart);
         internal static bool CheckShortName(char shortName) => char.IsLetter(shortName);
 
 
@@ -48,6 +49,9 @@ namespace CmdArgs
         {
             if (string.IsNullOrWhiteSpace(longName))
                 throw new ConfException("Long name is empty");
+            if (longName.Length == 0 || !CheckLongName(longName[0]))
+                throw new ConfException(
+                    $"First symbol of long name of arguments must be a letter, but [{longName}] provided");
             LongName = longName;
         }
 
@@ -74,8 +78,8 @@ namespace CmdArgs
         /// <param name="shortName">Short name of the argument</param>
         /// <param name="longName">Long name of the argument </param>
         /// <param name="description">Description of the argument</param>
-        protected Argument(char shortName, string longName, string description) : this(shortName,
-            longName)
+        protected Argument(char shortName, string longName, string description)
+            : this(shortName, longName)
         {
             Description = description;
         }
@@ -84,7 +88,7 @@ namespace CmdArgs
 
         #region conf
         public bool Mandatory { get; set; } = false;
-        public bool AllowMultiple { get; set; } = false;
+        public virtual bool AllowMultiple { get; set; } = false;
         #endregion
 
 
