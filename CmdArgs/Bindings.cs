@@ -26,9 +26,17 @@ namespace CmdArgs
         public Res<T> Args;
 
 
+        #region find biding
         public Binding FindBinding(char shortName)
         {
             Binding rv = bindings.FirstOrDefault(x => x.Is(shortName));
+            return rv;
+        }
+
+
+        public Binding FindBinding(string longName)
+        {
+            Binding rv = bindings.FirstOrDefault(x => x.Is(longName));
             return rv;
         }
 
@@ -37,11 +45,21 @@ namespace CmdArgs
             isLongName ? FindBinding(name) : FindBinding(name[0]);
 
 
-        public Binding FindBinding(string longName)
+        public Binding FindBindingMin(string argName)
         {
-            Binding rv = bindings.FirstOrDefault(x => x.Is(longName));
-            return rv;
+            int lastI = argName.IndexOf("=");
+            if (lastI < 0) lastI = argName.Length - 1;
+            else lastI--;
+
+            for (var i = 0; i <= lastI; i++)
+            {
+                string testArgLongName = argName.Substring(0, i + 1);
+                Binding b = FindBinding(testArgLongName);
+                if (b != null) return b;
+            }
+            return null;
         }
+        #endregion
 
 
         public void SetVal(char shortName, string[] values)

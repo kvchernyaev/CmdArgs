@@ -59,34 +59,20 @@ namespace CmdArgs
 
 
         internal static Binding IsSyntax<T>(ref string argName, Bindings<T> bindings, bool islong,
-
             out string[] values)
         {
-            Binding b = null;
-            if (islong)
-            {
-                int lastI = argName.IndexOf("=");
-                if (lastI < 0) lastI = argName.Length - 1;
-                else lastI--;
-
-                for (var i = 0; i <= lastI; i++)
-                {
-                    string testArgName = argName.Substring(0, i + 1);
-                    b = bindings.FindBinding(testArgName);
-                    if (b != null) break;
-                }
-            }
-            else
-                b = bindings.FindBinding(argName[0]);
+            Binding b = islong
+                ? bindings.FindBindingMin(argName)
+                : bindings.FindBinding(argName[0]);
 
             if (b != null && b.Argument is UnstrictlyConfArgument uca)
             {
-                string val = argName.Substring(islong ? b.Argument.LongName.Length : 1);
+                string nameval = argName.Substring(islong ? b.Argument.LongName.Length : 1);
                 argName = islong
                     ? argName.Substring(0, b.Argument.LongName.Length)
                     : argName[0].ToString();
 
-                values = new[] {val};
+                values = new[] {nameval};
                 return b;
             }
 
