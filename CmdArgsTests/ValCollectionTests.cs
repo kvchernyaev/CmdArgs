@@ -17,9 +17,6 @@ namespace CmdArgsTests
     public class ValCollectionTests
     {
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfCollections
         {
             [ValuedArgument('a')]
@@ -61,9 +58,6 @@ namespace CmdArgsTests
 
 
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfCollectionDef
         {
             [ValuedArgument('a', DefaultValue = 2)]
@@ -98,10 +92,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfOne
         {
             [ValuedArgument('i')]
@@ -114,14 +106,14 @@ namespace CmdArgsTests
         public void TestOne()
         {
             var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfOne>(new[] {"-i", "2", "3"}));
+            Res<ConfOne> r = p.ParseCommandLine<ConfOne>(new[] {"-i", "2", "3"});
+            Assert.AreEqual(2, r.Args.I);
+            Assert.IsTrue(new[] {"3"}.SequenceEqual(r.AdditionalArguments));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefPredicateBad
         {
             [ValuedArgument('a', DefaultValue = 2)]
@@ -142,10 +134,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefPredicateCollectionBad
         {
             [ValuedArgument('a', DefaultValue = 2)]

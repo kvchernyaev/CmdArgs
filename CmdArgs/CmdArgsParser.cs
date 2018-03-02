@@ -152,14 +152,18 @@ namespace CmdArgs
                 if (UseOnlyEqualitySyntax)
                     return null;
 
-                rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
+                if (b == null || b.Argument is ValuedArgument va && va.ValueIsCollection)
+                    rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
+                else
+                    rv = args.Skip(nextI).Take(1).TakeWhile(s => !IsArg(s)).ToArray();
+
                 nextI += rv.Length;
                 return rv;
             }
 
             argName = name;
             b = bindings.FindBinding(argName, islong);
-            if (b != null && b.Argument is ValuedArgument va && va.ValueIsCollection)
+            if (b != null && b.Argument is ValuedArgument va1 && va1.ValueIsCollection)
                 rv = valuesString.Split(EqualityModeValSeparators,
                     StringSplitOptions.RemoveEmptyEntries);
             else rv = new[] {valuesString};

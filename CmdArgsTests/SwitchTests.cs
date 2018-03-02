@@ -123,7 +123,7 @@ namespace CmdArgsTests
         [Test]
         public void TestTwo()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgsParser();
 
             Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "-d"});
             Check(rv, s: true, d: true);
