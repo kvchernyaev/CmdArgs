@@ -41,22 +41,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Arguments\Argument.cs" />
-    <Compile Include="Arguments\ArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\ArgumentAttribute.cs" />
     <Compile Include="Arguments\ConcreteArgument.cs" />
     <Compile Include="Arguments\CustomArgument.cs" />
-    <Compile Include="Arguments\CustomArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\CustomArgumentAttribute.cs" />
     <Compile Include="Arguments\DirArgument.cs" />
-    <Compile Include="Arguments\DirArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\DirArgumentAttribute.cs" />
     <Compile Include="Arguments\FileArgument.cs" />
-    <Compile Include="Arguments\FileArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\FileArgumentAttribute.cs" />
     <Compile Include="Arguments\IArgument.cs" />
     <Compile Include="Arguments\IValuedArgument.cs" />
     <Compile Include="Arguments\SwitchArgument.cs" />
-    <Compile Include="Arguments\SwitchArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\SwitchArgumentAttribute.cs" />
     <Compile Include="Arguments\UnstrictlyConfArgument.cs" />
-    <Compile Include="Arguments\UnstrictlyConfArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\UnstrictlyConfArgumentAttribute.cs" />
     <Compile Include="Arguments\ValuedArgument.cs" />
-    <Compile Include="Arguments\ValuedArgumentAttribute.cs" />
+    <Compile Include="Arguments\Attributes\ValuedArgumentAttribute.cs" />
     <Compile Include="Binding.cs" />
     <Compile Include="Bindings.cs" />
     <Compile Include="Exceptions\ConfException.cs" />
