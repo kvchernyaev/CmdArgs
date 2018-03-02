@@ -148,10 +148,10 @@ namespace CmdArgs
             argName.SplitPairByEquality(out string name, out string valuesString);
             if (valuesString == null)
             {
+                b = bindings.FindBinding(argName, islong);
                 if (UseOnlyEqualitySyntax)
                     return null;
 
-                b = bindings.FindBinding(argName, islong);
                 rv = args.Skip(nextI).TakeWhile(s => !IsArg(s)).ToArray();
                 nextI += rv.Length;
                 return rv;
@@ -159,8 +159,10 @@ namespace CmdArgs
 
             argName = name;
             b = bindings.FindBinding(argName, islong);
-            rv = valuesString.Split(EqualityModeValSeparators,
-                StringSplitOptions.RemoveEmptyEntries);
+            if (b != null && b.Argument is ValuedArgument va && va.ValueIsCollection)
+                rv = valuesString.Split(EqualityModeValSeparators,
+                    StringSplitOptions.RemoveEmptyEntries);
+            else rv = new[] {valuesString};
             return rv;
         }
 

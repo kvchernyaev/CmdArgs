@@ -32,6 +32,31 @@ namespace CmdArgsTests
             p.UseOnlyEqualitySyntax = true;
             p.AllowAdditionalArguments = true;
             Res<ConfEmpty> r = p.ParseCommandLine<ConfEmpty>(new[] {"-a=", "noval"});
+            Assert.AreEqual("", r.Args.A);
+            Assert.IsTrue(new[] {"noval"}.SequenceEqual(r.AdditionalArguments));
+        }
+
+
+
+        [Test]
+        public void TestEmpty1()
+        {
+            var p = new CmdArgsParser();
+            p.UseOnlyEqualitySyntax = true;
+            p.AllowAdditionalArguments = true;
+            Res<ConfEmpty> r = p.ParseCommandLine<ConfEmpty>(new[] {"-a", "noval"});
+            Assert.AreEqual("def", r.Args.A);
+            Assert.IsTrue(new[] {"noval"}.SequenceEqual(r.AdditionalArguments));
+        }
+
+
+        [Test]
+        public void TestEmpty2()
+        {
+            var p = new CmdArgsParser();
+            p.UseOnlyEqualitySyntax = true;
+            p.AllowAdditionalArguments = true;
+            Res<ConfEmpty> r = p.ParseCommandLine<ConfEmpty>(new[] {"-a"});
             Assert.AreEqual("def", r.Args.A);
         }
 

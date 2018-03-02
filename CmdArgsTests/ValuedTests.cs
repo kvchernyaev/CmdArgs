@@ -48,10 +48,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefTypeNotMatch
         {
             [ValuedArgument('s', "some", DefaultValue = "1")]
@@ -69,10 +67,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefErrorMandatory
         {
             [ValuedArgument('a', "deftrue", DefaultValue = 5, Mandatory = true,
@@ -89,10 +85,10 @@ namespace CmdArgsTests
             Assert.Throws<ConfException>(() =>
                 p.ParseCommandLine<ConfDefErrorMandatory>(new[] {"--deftrue"}));
         }
+
+
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefErrorUsenoarg
         {
             [ValuedArgument('a', "deftrue", UseDefWhenNoArg = true)]
@@ -110,10 +106,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDef
         {
             [ValuedArgument('a', "deftrue", DefaultValue = 5, UseDefWhenNoArg = true)]
@@ -159,10 +153,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class Conf
         {
             [ValuedArgument('s', "some")]
@@ -236,10 +228,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfFloating
         {
             [ValuedArgument('s')]
@@ -284,10 +274,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfChar
         {
             [ValuedArgument('c')] public char C;
@@ -301,6 +289,33 @@ namespace CmdArgsTests
             var p = new CmdArgsParser();
             Res<ConfChar> rv = p.ParseCommandLine<ConfChar>(new[] {"-c", "u"});
             Assert.AreEqual(actual: rv.Args.C, expected: 'u');
+        }
+
+
+
+        ////////////////////////////////////////////////////////////////
+        class ConfString
+        {
+            [ValuedArgument('s')] public string S;
+        }
+
+
+
+        [Test]
+        public void TestStringSpaces()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfString> rv = p.ParseCommandLine<ConfString>(new[] {"-s", "value with value"});
+            Assert.AreEqual("value with value", rv.Args.S);
+        }
+
+
+        [Test]
+        public void TestStringSpacesEquality()
+        {
+            var p = new CmdArgsParser();
+            Res<ConfString> rv = p.ParseCommandLine<ConfString>(new[] {"-s=value with value"});
+            Assert.AreEqual("value with value", rv.Args.S);
         }
     }
 }
