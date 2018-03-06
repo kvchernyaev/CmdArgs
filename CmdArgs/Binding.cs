@@ -56,115 +56,11 @@ namespace CmdArgs
                 throw new CmdException(
                     $"Argument [{Argument.Name}] can not be set multiple times");
 
-            ParseAndSetArgumentValues(values);
+            if (Argument.ParseAndSet(GetValueInternal(), values, out object argVal))
+                SetValueInternal(argVal);
         }
 
 
-        void ParseAndSetArgumentValues(string[] values)
-        {
-            if (!Argument.CanHaveValue) // it is Switch
-            {
-                if (values != null && values.Length > 0)
-                    throw new CmdException(
-                        $"Argument [{Argument.Name}] can not have value but value [{string.Join(",", values)}] is passed");
-                SetValueInternal(true);
-                return;
-            }
-
-            if (Argument is UnstrictlyConfArgument uca)
-            {
-                var conf = (UnstrictlyConf) GetValueInternal();
-                if (conf == null) SetValueInternal(conf = new UnstrictlyConf());
-
-                values[0].SplitPairByEquality(out string name, out string value);
-                if (string.IsNullOrEmpty(name))
-                    throw new CmdException(
-                        $"Argument [{uca.Name}] : {values[0]} must be with name part");
-                conf.Add(new UnstrictlyConf.UnstrictlyConfItem(name, value));
-            }
-            else if (Argument is ValuedArgument va)
-                if (values == null || values.Length == 0)
-                {
-                    if (va.DefaultValueEffective == null)
-                        throw new CmdException($"Value for argument [{va.Name}] is needed");
-                    SetValueInternal(va.DefaultValueEffective);
-                }
-                else if (va.ValueIsCollection)
-                    DeserializeAndSetValue(values);
-                else if (values.Length == 1)
-                    DeserializeAndSetValue(values[0]);
-                else
-                    throw new CmdException(
-                        $"Argument [{va.Name}] can not be a collection, but passed [{string.Join(",", values)}]");
-            else
-                throw new ConfException(
-                    $"Argument [{Argument.Name}] - type {Argument.GetType().Name} is not supported");
-        }
-
-
-
-
-        void DeserializeAndSetValue(string[] vals)
-        {
-            var va = (ValuedArgument) Argument;
-
-            var l = new List<object>(vals.Length);
-            foreach (string val in vals)
-            {
-                object argVal = DeserializeOne(va, val);
-                l.Add(argVal);
-            }
-            object collectionValue = va.CreateSameCollection(l);
-
-            va.CheckValuesCollection(collectionValue, true);
-            SetValueInternal(collectionValue);
-        }
-
-
-        void DeserializeAndSetValue(string val)
-        {
-            var va = (ValuedArgument) Argument;
-            object argVal = DeserializeOne(va, val);
-
-            SetValueInternal(argVal);
-        }
-
-
-        /// <summary>
-        /// and check
-        /// </summary>
-        static object DeserializeOne(ValuedArgument va, string val)
-        {
-            object argVal;
-            try
-            {
-                argVal = va.DeserializeAndCheckValueMaybeString(val, true);
-            }
-            catch (FormatException ex)
-            {
-                throw new CmdException(
-                    $"Argument [{va.Name}]: value [{val}] can not be converted to type {va.ValueType.Name}",
-                    ex);
-            }
-            catch (NotSupportedException ex)
-            {
-                throw new CmdException(
-                    $"Argument [{va.Name}]: value [{val}] can not be converted to type {va.ValueType.Name}",
-                    ex);
-            }
-            catch (ArgumentException ex)
-            {
-                throw new CmdException(
-                    $"Argument [{va.Name}]: value [{val}] can not be converted to type {va.ValueType.Name}",
-                    ex);
-            }
-            return argVal;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="argVal">Must be of argument's type</param>
         void SetValueInternal(object argVal)
         {

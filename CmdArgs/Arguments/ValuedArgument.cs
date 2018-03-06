@@ -213,6 +213,86 @@ namespace CmdArgs
         }
 
 
+        #region deserialize
+        public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        {
+            if (values == null || values.Length == 0)
+                argVal = DefaultValueEffective ??
+                         throw new CmdException($"Value for argument [{Name}] is needed");
+            else if (ValueIsCollection)
+                argVal = DeserializeOneAndCatch(values);
+            else if (values.Length == 1)
+                argVal = DeserializeOneAndCatch(values[0]);
+            else
+                throw new CmdException(
+                    $"Argument [{Name}] can not be a collection, but passed [{string.Join(",", values)}]");
+
+            return true;
+        }
+
+
+        object DeserializeOneAndCatch(string[] vals)
+        {
+            //var va = (ValuedArgument)Argument;
+
+            var l = new List<object>(vals.Length);
+            foreach (string val in vals)
+            {
+                object argVal = DeserializeOneAndCatch(val);
+                l.Add(argVal);
+            }
+            object collectionValue = CreateSameCollection(l);
+
+            CheckValuesCollection(collectionValue, true);
+            return collectionValue;
+        }
+
+
+        /// <summary>
+        /// and check
+        /// </summary>
+        object DeserializeOneAndCatch(string val)
+        {
+            object argVal;
+            try
+            {
+                argVal = DeserializeAndCheckValueMaybeString(val, true);
+            }
+            catch (FormatException ex)
+            {
+                throw new CmdException(
+                    $"Argument [{Name}]: value [{val}] can not be converted to type {ValueType.Name}",
+                    ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                throw new CmdException(
+                    $"Argument [{Name}]: value [{val}] can not be converted to type {ValueType.Name}",
+                    ex);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new CmdException(
+                    $"Argument [{Name}]: value [{val}] can not be converted to type {ValueType.Name}",
+                    ex);
+            }
+            return argVal;
+        }
+
+
+        object DeserializeAndCheckValueMaybeString(object v, bool isFromCmd)
+        {
+            object o = DeserializeOneOrPass(v);
+            CheckValue(o, v.ToString(), isFromCmd);
+            return o;
+        }
+
+
+        protected object DeserializeOneOrPass(object value) => ValueType.IsInstanceOfType(value)
+            ? value
+            : DeserializeOne((string) value);
+
+
         /// <returns>Instance of ValueType</returns>
         protected virtual object DeserializeOne(string valueSrc)
         {
@@ -228,22 +308,10 @@ namespace CmdArgs
                     Culture ?? CultureInfo.InvariantCulture);
             return obj;
         }
-
-
-        protected object DeserializeOneOrPass(object value) => ValueType.IsInstanceOfType(value)
-            ? value
-            : DeserializeOne((string) value);
+        #endregion
 
 
         #region check value or collection of values
-        public object DeserializeAndCheckValueMaybeString(object v, bool isFromCmd)
-        {
-            object o = DeserializeOneOrPass(v);
-            CheckValue(o, v.ToString(), isFromCmd);
-            return o;
-        }
-
-
         /// <summary>
         /// Проверить значение, уже десериализованное. Не проверяется тип.
         /// </summary>
@@ -257,7 +325,7 @@ namespace CmdArgs
         }
 
 
-        public void CheckValuesCollection(object collectionValue, bool isFromCmd)
+        void CheckValuesCollection(object collectionValue, bool isFromCmd)
         {
             if (ValuePredicatesForCollection?.Count > 0)
                 foreach (Delegate predicate in ValuePredicatesForCollection)

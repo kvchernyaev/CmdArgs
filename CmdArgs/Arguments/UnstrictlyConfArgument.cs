@@ -79,5 +79,27 @@ namespace CmdArgs
             values = null;
             return null;
         }
+
+
+        public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        {
+            var rv = false;
+            var conf = (UnstrictlyConf) prevValue;
+            if (conf == null)
+            {
+                rv = true;
+                conf = new UnstrictlyConf();
+            }
+
+            values[0].SplitPairByEquality(out string name, out string value);
+            if (string.IsNullOrEmpty(name))
+                throw new CmdException(
+                    $"Argument [{Name}] : {values[0]} must be with name part");
+
+            conf.Add(new UnstrictlyConf.UnstrictlyConfItem(name, value));
+
+            argVal = conf;
+            return rv;
+        }
     }
 }

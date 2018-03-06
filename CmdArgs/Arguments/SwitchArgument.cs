@@ -47,5 +47,18 @@ namespace CmdArgs
                 throw new ConfException(
                     $"Argument [{Name}]: field must be of type bool, but it is of type {fieldType.Name}");
         }
+
+
+        //public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        //    => throw new Exception(nameof(SwitchArgument) + " can not make ParseAndSet");
+        public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        {
+            if (values != null && values.Length > 0)
+                throw new CmdException(
+                    $"Argument [{Name}] can not have value but value [{string.Join(",", values)}] is passed");
+
+            argVal = true;
+            return true;
+        }
     }
 }

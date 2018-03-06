@@ -96,5 +96,9 @@ namespace CmdArgs
 
 
         public abstract void CheckFieldType(Type fieldType);
+
+
+        public abstract bool ParseAndSet(object prevValue, string[] values,
+            out object argVal);
     }
 }

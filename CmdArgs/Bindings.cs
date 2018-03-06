@@ -71,6 +71,15 @@ namespace CmdArgs
         }
 
 
+        public void SetVal(string longName, string[] values)
+        {
+            if (!Argument.CheckLongName(longName[0]))
+                throw new CmdException($"LongName [{longName}] is not allowed");
+            Binding binding = FindBinding(longName);
+            SetVal(binding, values, longName);
+        }
+
+
         public void SetVal(Binding binding, string[] values, string nameUnknown)
         {
             if (binding == null)
@@ -81,15 +90,6 @@ namespace CmdArgs
                     throw new CmdException($"Unknown parameter: {nameUnknown}");
             else
                 binding.SetVal(values);
-        }
-
-
-        public void SetVal(string longName, string[] values)
-        {
-            if (!Argument.CheckLongName(longName[0]))
-                throw new CmdException($"LongName [{longName}] is not allowed");
-            Binding binding = FindBinding(longName);
-            SetVal(binding, values, longName);
         }
     }
 }
