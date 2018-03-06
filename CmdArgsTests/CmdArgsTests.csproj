@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="AdditionalArgumentsTests.cs" />
     <Compile Include="AllowedValuesTests.cs" />
+    <Compile Include="ArgsFileTests.cs" />
     <Compile Include="EqualValueTests.cs" />
     <Compile Include="FluidBaseTests.cs" />
     <Compile Include="SimpleTypesTests.cs" />
@@ -69,6 +70,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="args.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
