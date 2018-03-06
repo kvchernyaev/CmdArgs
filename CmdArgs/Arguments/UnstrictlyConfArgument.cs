@@ -47,9 +47,6 @@ namespace CmdArgs
         }
 
 
-        internal override bool CanHaveValue => true;
-
-
         public override void CheckFieldType(Type fieldType)
         {
             if (fieldType != typeof(UnstrictlyConf))
@@ -81,7 +78,7 @@ namespace CmdArgs
         }
 
 
-        public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        public override bool Parse(object prevValue, string[] values, out object argVal)
         {
             var rv = false;
             var conf = (UnstrictlyConf) prevValue;

@@ -92,13 +92,10 @@ namespace CmdArgs
         #endregion
 
 
-        internal abstract bool CanHaveValue { get; }
-
-
         public abstract void CheckFieldType(Type fieldType);
 
 
-        public abstract bool ParseAndSet(object prevValue, string[] values,
+        public abstract bool Parse(object prevValue, string[] values,
             out object argVal);
     }
 }

@@ -38,9 +38,6 @@ namespace CmdArgs
         }
 
 
-        internal override bool CanHaveValue => false;
-
-
         public override void CheckFieldType(Type fieldType)
         {
             if (fieldType != typeof(bool))
@@ -49,9 +46,7 @@ namespace CmdArgs
         }
 
 
-        //public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
-        //    => throw new Exception(nameof(SwitchArgument) + " can not make ParseAndSet");
-        public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        public override bool Parse(object prevValue, string[] values, out object argVal)
         {
             if (values != null && values.Length > 0)
                 throw new CmdException(

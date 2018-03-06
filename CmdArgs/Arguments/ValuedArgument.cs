@@ -125,9 +125,6 @@ namespace CmdArgs
         #endregion
 
 
-        internal override bool CanHaveValue => true;
-
-
         static readonly Type[] AllowedTypes = {typeof(Guid), typeof(DateTime), typeof(TimeSpan)};
 
 
@@ -214,7 +211,7 @@ namespace CmdArgs
 
 
         #region deserialize
-        public override bool ParseAndSet(object prevValue, string[] values, out object argVal)
+        public override bool Parse(object prevValue, string[] values, out object argVal)
         {
             if (values == null || values.Length == 0)
                 argVal = DefaultValueEffective ??

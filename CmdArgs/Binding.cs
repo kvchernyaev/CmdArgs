@@ -56,7 +56,7 @@ namespace CmdArgs
                 throw new CmdException(
                     $"Argument [{Argument.Name}] can not be set multiple times");
 
-            if (Argument.ParseAndSet(GetValueInternal(), values, out object argVal))
+            if (Argument.Parse(GetValueInternal(), values, out object argVal))
                 SetValueInternal(argVal);
         }
 
