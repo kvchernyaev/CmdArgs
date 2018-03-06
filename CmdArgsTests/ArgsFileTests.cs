@@ -47,9 +47,9 @@ namespace CmdArgsTests
         [Test]
         public void TestSimple()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
 
-            Res<Conf> r = p.ParseCommandLine<Conf>(new[] {"-d", ArgsConfFilepath});
+            Res<Conf> r = p.ParseCommandLine(new[] {"-d", ArgsConfFilepath});
             Assert.AreEqual("asdffs", r.Args.S);
             Assert.AreEqual("qwer", r.Args.T);
             Assert.AreEqual("uio 89", r.Args.U);
@@ -59,9 +59,9 @@ namespace CmdArgsTests
         [Test]
         public void TestSimpleBefore()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
 
-            Res<Conf> r = p.ParseCommandLine<Conf>(new[] {"-s=nm", "-d", ArgsConfFilepath});
+            Res<Conf> r = p.ParseCommandLine(new[] {"-s=nm", "-d", ArgsConfFilepath});
             Assert.AreEqual("asdffs", r.Args.S);
             Assert.AreEqual("qwer", r.Args.T);
             Assert.AreEqual("uio 89", r.Args.U);
@@ -71,9 +71,9 @@ namespace CmdArgsTests
         [Test]
         public void TestSimpleAfter()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
 
-            Res<Conf> r = p.ParseCommandLine<Conf>(new[] {"-d", ArgsConfFilepath, "-s=nm"});
+            Res<Conf> r = p.ParseCommandLine(new[] {"-d", ArgsConfFilepath, "-s=nm"});
             Assert.AreEqual("nm", r.Args.S);
             Assert.AreEqual("qwer", r.Args.T);
             Assert.AreEqual("uio 89", r.Args.U);
@@ -83,9 +83,9 @@ namespace CmdArgsTests
         [Test]
         public void TestDouble()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
 
-            Res<Conf> r = p.ParseCommandLine<Conf>(new[]
+            Res<Conf> r = p.ParseCommandLine(new[]
                     {"-d", ArgsConfFilepath, "-s=nm", "-d", ArgsConfFilepath,});
             Assert.AreEqual("nm", r.Args.S);
             Assert.AreEqual("qwer", r.Args.T);

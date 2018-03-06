@@ -16,6 +16,7 @@ namespace CmdArgsTests
     [TestFixture]
     public class AllowedValuesTests
     {
+        ////////////////////////////////////////////////////////////////
         class Conf
         {
             [ValuedArgument('a')] public Constraint A;
@@ -45,8 +46,7 @@ namespace CmdArgsTests
         [Test]
         public void TestEnum()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> res = p.ParseCommandLine<Conf>(new[] {"-a", "2", "-b", "two", "-c"});
+            Res<Conf> res = CmdArgsParser<Conf>.Parse(new[] {"-a", "2", "-b", "two", "-c"});
 
             Assert.AreEqual(Constraint.Two, res.Args.A);
             Assert.AreEqual(Constraint.Two, res.Args.B);
@@ -55,10 +55,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfAllowed
         {
             [ValuedArgument('a', AllowedValues = new object[] {3, 5, 6})]
@@ -78,8 +76,8 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfAllowed> res = p.ParseCommandLine<ConfAllowed>(new[] {"-a", "5", "-b"});
+            var p = new CmdArgsParser<ConfAllowed>();
+            Res<ConfAllowed> res = p.ParseCommandLine(new[] {"-a", "5", "-b"});
             Assert.AreEqual(5, res.Args.A);
             Assert.AreEqual(8, res.Args.B);
             Assert.AreEqual(null, res.Args.C);
@@ -89,8 +87,8 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedOut()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfAllowed>(new[] {"-a", "4"}));
+            var p = new CmdArgsParser<ConfAllowed>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-a", "4"}));
         }
 
 
@@ -109,8 +107,8 @@ namespace CmdArgsTests
         [Test]
         public void TestEnumAllowedOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfEnumAllowed> res = p.ParseCommandLine<ConfEnumAllowed>(new[] {"-a", "3"});
+            var p = new CmdArgsParser<ConfEnumAllowed>();
+            Res<ConfEnumAllowed> res = p.ParseCommandLine(new[] {"-a", "3"});
             Assert.AreEqual(Constraint.Three, res.Args.A);
         }
 
@@ -118,9 +116,9 @@ namespace CmdArgsTests
         [Test]
         public void TestEnumAllowedOut()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfEnumAllowed>();
             Assert.Throws<CmdException>(
-                () => p.ParseCommandLine<ConfEnumAllowed>(new[] {"-a", "2"}));
+                () => p.ParseCommandLine(new[] {"-a", "2"}));
         }
 
 
@@ -139,16 +137,14 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedBadAllowedType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAllowedBadAllowedType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfAllowedBadAllowedType>(new[] {"-b"}));
+                p.ParseCommandLine(new[] {"-b"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfBadDefaultByAllowed
         {
             [ValuedArgument('b', AllowedValues = new object[] {7, 8, 9}, DefaultValue = 5)]
@@ -160,16 +156,14 @@ namespace CmdArgsTests
         [Test]
         public void TestBadDefaultByAllowed()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfBadDefaultByAllowed>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfBadDefaultByAllowed>(new[] {"-b"}));
+                p.ParseCommandLine(new[] {"-b"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfAllowedBadDefaultByRegex
         {
             [ValuedArgument('b', DefaultValue = "qwer", RegularExpression = @"\d")]
@@ -181,9 +175,9 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedBadDefaultByRegex()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAllowedBadDefaultByRegex>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfAllowedBadDefaultByRegex>(new[] {"-b"}));
+                p.ParseCommandLine(new[] {"-b"}));
         }
         ////////////////////////////////////////////////////////////////
 
@@ -201,9 +195,9 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedBadAllowedByRegex()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAllowedBadAllowedByRegex>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfAllowedBadAllowedByRegex>(new[] {"-b"}));
+                p.ParseCommandLine(new[] {"-b"}));
         }
 
 
@@ -229,36 +223,32 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateBad()
         {
-            var p = new CmdArgsParser();
             var testi = 20;
             Predicate<int> pred = i => i <= testi; // using closure
             ConfPredicate.B_Predicate_closure = pred; // using delegate variable
             ConfPredicate.B_Predicate_set = i => i % 3 == 0;
 
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfPredicate>(new[] {"--IntPredicate", "25"}));
+                CmdArgsParser<ConfPredicate>.Parse(new[] {"--IntPredicate", "25"}));
         }
 
 
         [Test]
         public void TestPredicateOk()
         {
-            var p = new CmdArgsParser();
             var testi = 20;
             Predicate<int> pred = i => i <= testi; // using closure
             ConfPredicate.B_Predicate_closure = pred; // using delegate variable
             ConfPredicate.B_Predicate_set = i => i % 3 == 0;
 
             // must be 1..20 and divides by 3
-            Res<ConfPredicate> res = p.ParseCommandLine<ConfPredicate>(new[] {"-b", "9"});
+            Res<ConfPredicate> res = CmdArgsParser<ConfPredicate>.Parse(new[] {"-b", "9"});
             Assert.AreEqual(9, res.Args.B);
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfPredicateArOne
         {
             [ValuedArgument('b')] public int[] B;
@@ -272,9 +262,9 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateArOneOk()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateArOne>();
             Res<ConfPredicateArOne> res =
-                p.ParseCommandLine<ConfPredicateArOne>(new[] {"-b", "25", "123"});
+                p.ParseCommandLine(new[] {"-b", "25", "123"});
             Assert.IsTrue(new[] {25, 123}.SequenceEqual(res.Args.B));
         }
 
@@ -282,16 +272,14 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateArOneBad()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateArOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfPredicateArOne>(new[] {"-b", "25", "1", "123"}));
+                p.ParseCommandLine(new[] {"-b", "25", "1", "123"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfPredicateArAr
         {
             [ValuedArgument('b')] public int[] B;
@@ -306,9 +294,9 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateArArOk()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateArAr>();
             Res<ConfPredicateArAr> res =
-                p.ParseCommandLine<ConfPredicateArAr>(new[] {"-b", "25", "123", "12"});
+                p.ParseCommandLine(new[] {"-b", "25", "123", "12"});
             Assert.IsTrue(new[] {25, 123, 12}.SequenceEqual(res.Args.B));
         }
 
@@ -316,25 +304,23 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateArArBadOne()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateArAr>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfPredicateArAr>(new[] {"-b", "25", "1", "12"}));
+                p.ParseCommandLine(new[] {"-b", "25", "1", "12"}));
         }
 
 
         [Test]
         public void TestPredicateArArBadAr()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateArAr>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfPredicateArAr>(new[] {"-b", "25", "12"}));
+                p.ParseCommandLine(new[] {"-b", "25", "12"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfPredicateBadType
         {
             [ValuedArgument('b')] public int B;
@@ -349,16 +335,14 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateBadType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateBadType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfPredicateBadType>(new[] {"-b", "25"}));
+                p.ParseCommandLine(new[] {"-b", "25"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfAllowedPredicate
         {
             [ValuedArgument('b', AllowedValues = new object[] {4, 5, 6})]
@@ -373,16 +357,14 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedPredicate()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAllowedPredicate>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfAllowedPredicate>(new[] {"-b", "6"}));
+                p.ParseCommandLine(new[] {"-b", "6"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfPredicateBadTypeAr
         {
             [ValuedArgument('b')] public int[] B;
@@ -397,17 +379,15 @@ namespace CmdArgsTests
         [Test]
         public void TestPredicateBadTypeAr()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfPredicateBadTypeAr>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfPredicateBadTypeAr>(new[] {"-b", "25"}));
+                p.ParseCommandLine(new[] {"-b", "25"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfRegex
         {
             [ValuedArgument('b', RegularExpression = @"^[a-d]B\d$")]
@@ -419,8 +399,8 @@ namespace CmdArgsTests
         [Test]
         public void TestRegexOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfRegex> res = p.ParseCommandLine<ConfRegex>(new[] {"-b", "bB1"});
+            var p = new CmdArgsParser<ConfRegex>();
+            Res<ConfRegex> res = p.ParseCommandLine(new[] {"-b", "bB1"});
             Assert.AreEqual("bB1", res.Args.B);
         }
 
@@ -428,15 +408,13 @@ namespace CmdArgsTests
         [Test]
         public void TestRegexBad()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfRegex>(new[] {"-b", "eB1"}));
+            var p = new CmdArgsParser<ConfRegex>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-b", "eB1"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfRegexInt
         {
             [ValuedArgument('b', RegularExpression = @"^[123]0[89]$")]
@@ -448,8 +426,8 @@ namespace CmdArgsTests
         [Test]
         public void TestRegexIntOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfRegexInt> res = p.ParseCommandLine<ConfRegexInt>(new[] {"-b", "208"});
+            var p = new CmdArgsParser<ConfRegexInt>();
+            Res<ConfRegexInt> res = p.ParseCommandLine(new[] {"-b", "208"});
             Assert.AreEqual(208, res.Args.B);
         }
 
@@ -457,9 +435,9 @@ namespace CmdArgsTests
         [Test]
         public void TestRegexIntBad()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfRegexInt>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfRegexInt>(new[] {"-b", "218"}));
+                p.ParseCommandLine(new[] {"-b", "218"}));
         }
 
 

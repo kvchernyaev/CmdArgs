@@ -44,10 +44,10 @@ namespace CmdArgsTests
         [Test]
         public void TestAdditional()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
             p.AllowAdditionalArguments = true;
             p.UseOnlyEqualitySyntax = true;
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-ds", "addval"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-ds", "addval"});
             Check(rv, s: true, d: true, addit: new[] {"addval"});
         }
 
@@ -55,30 +55,30 @@ namespace CmdArgsTests
         [Test]
         public void TestAdditionalAllowfalse()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
             p.AllowAdditionalArguments = false;
             p.UseOnlyEqualitySyntax = true;
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-ds", "addval"}));
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-ds", "addval"}));
         }
 
 
         [Test]
         public void TestAdditionalEqfalse()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
             p.AllowAdditionalArguments = true;
             p.UseOnlyEqualitySyntax = false;
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-ds", "addval"}));
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-ds", "addval"}));
         }
 
 
         [Test]
         public void TestAdditionalFirst()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
             p.AllowAdditionalArguments = true;
             p.UseOnlyEqualitySyntax = true;
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"addval", "-ds",});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"addval", "-ds",});
             Check(rv, s: true, d: true, addit: new[] {"addval"});
         }
 

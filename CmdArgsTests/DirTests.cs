@@ -29,8 +29,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDirOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDir> res = p.ParseCommandLine<ConfDir>(new[] {"-f", "./asdf"});
+            var p = new CmdArgsParser<ConfDir>();
+            Res<ConfDir> res = p.ParseCommandLine(new[] {"-f", "./asdf"});
             Assert.AreEqual("asdf", res.Args.Dir.Name);
         }
 
@@ -38,18 +38,18 @@ namespace CmdArgsTests
         [Test]
         public void TestDirWrongUrl()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDir>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfDir>(new[] {"-f", "./asdf:asdf"}));
+                p.ParseCommandLine(new[] {"-f", "./asdf:asdf"}));
         }
 
 
         [Test]
         public void TestDirWrongUrl1()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDir>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfDir>(new[] {"-f", "./asdf\""}));
+                p.ParseCommandLine(new[] {"-f", "./asdf\""}));
         }
 
 
@@ -66,10 +66,10 @@ namespace CmdArgsTests
         public void TestDirExists()
         {
             Assembly a = Assembly.GetExecutingAssembly();
-            FileInfo fi = new FileInfo(a.Location);
+            var fi = new FileInfo(a.Location);
 
-            var p = new CmdArgsParser();
-            Res<ConfDirEx> res = p.ParseCommandLine<ConfDirEx>(new[] {"-f", fi.DirectoryName});
+            var p = new CmdArgsParser<ConfDirEx>();
+            Res<ConfDirEx> res = p.ParseCommandLine(new[] {"-f", fi.DirectoryName});
             Assert.AreEqual(true, res.Args.Dir.Exists);
             Assert.AreEqual(fi.DirectoryName, res.Args.Dir.FullName);
         }
@@ -78,16 +78,14 @@ namespace CmdArgsTests
         [Test]
         public void TestDirNotExists()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDirEx>();
             Assert.Throws<CmdException>(
-                () => p.ParseCommandLine<ConfDirEx>(new[] {"-f", "./asdf"}));
+                () => p.ParseCommandLine(new[] {"-f", "./asdf"}));
         }
 
 
+
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfDirDefaultValue
         {
             [DirArgument('f', DefaultValue = "./somename")]
@@ -99,16 +97,14 @@ namespace CmdArgsTests
         [Test]
         public void TestDirDefaultValueOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDirDefaultValue> r = p.ParseCommandLine<ConfDirDefaultValue>(new[] {"-f"});
+            var p = new CmdArgsParser<ConfDirDefaultValue>();
+            Res<ConfDirDefaultValue> r = p.ParseCommandLine(new[] {"-f"});
             Assert.AreEqual("somename", r.Args.Dir.Name);
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDirAllowedValuesBadType
         {
             [DirArgument('f', AllowedValues = new object[] {"./asdf", 2})]
@@ -120,19 +116,17 @@ namespace CmdArgsTests
         [Test]
         public void TestDirAllowedValuesBadType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDirAllowedValuesBadType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDirAllowedValuesBadType>(new[] {"-f", "./asdf"}));
+                p.ParseCommandLine(new[] {"-f", "./asdf"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDirAllowedValues
         {
-            [DirArgument('f', AllowedValues = new object[] {"./asdf", "somename" })]
+            [DirArgument('f', AllowedValues = new object[] {"./asdf", "somename"})]
             public DirectoryInfo Dir;
         }
 
@@ -141,10 +135,10 @@ namespace CmdArgsTests
         [Test]
         public void TestDirAllowedValuesOk()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDirAllowedValues>();
             // test not exactly equality
             Res<ConfDirAllowedValues> res =
-                p.ParseCommandLine<ConfDirAllowedValues>(new[] {"-f", "./somename" });
+                p.ParseCommandLine(new[] {"-f", "./somename"});
             var fi = new DirectoryInfo("./somename");
             Assert.AreEqual(fi.FullName, res.Args.Dir.FullName);
         }
@@ -153,10 +147,10 @@ namespace CmdArgsTests
         [Test]
         public void TestDirAllowedValuesBad()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDirAllowedValues>();
             // test not exactly equality
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfDirAllowedValues>(new[] {"-f", "./notexists"}));
+                p.ParseCommandLine(new[] {"-f", "./notexists"}));
         }
 
 

@@ -27,8 +27,8 @@ namespace CmdArgsTests
         [Test]
         public void TestWrongType()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfWrongType>(new[] {"-a"}));
+            var p = new CmdArgsParser<ConfWrongType>();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine(new[] {"-a"}));
         }
 
 
@@ -49,8 +49,8 @@ namespace CmdArgsTests
         [Test]
         public void TestShortname()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s"});
             Check(rv, s: true, d: false);
         }
 
@@ -58,24 +58,24 @@ namespace CmdArgsTests
         [Test]
         public void TestShortnameCase()
         {
-            var p = new CmdArgs.CmdArgsParser
+            var p = new CmdArgs.CmdArgsParser<Conf>
                 {
                     AllowUnknownArguments = false
                 };
 
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-S"}));
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-S"}));
         }
 
 
         [Test]
         public void TestShortname2()
         {
-            var p = new CmdArgs.CmdArgsParser
+            var p = new CmdArgs.CmdArgsParser<Conf>
                 {
                     AllowUnknownArguments = true
                 };
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-d"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-d"});
             Check(rv, s: false, d: true);
         }
 
@@ -83,9 +83,9 @@ namespace CmdArgsTests
         [Test]
         public void TestLongname()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgs.CmdArgsParser<Conf>();
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--dummy"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"--dummy"});
             Check(rv, s: false, d: true);
         }
 
@@ -93,9 +93,9 @@ namespace CmdArgsTests
         [Test]
         public void TestIgnoreCase()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgs.CmdArgsParser<Conf>();
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--DUMMY"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"--DUMMY"});
             Check(rv, s: false, d: true);
         }
 
@@ -103,9 +103,9 @@ namespace CmdArgsTests
         [Test]
         public void TestTwoInOne()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgs.CmdArgsParser<Conf>();
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-sd"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-sd"});
             Check(rv, s: true, d: true);
         }
 
@@ -113,9 +113,9 @@ namespace CmdArgsTests
         [Test]
         public void TestTwoInOne1()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgs.CmdArgsParser<Conf>();
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-ds"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-ds"});
             Check(rv, s: true, d: true);
         }
 
@@ -123,9 +123,9 @@ namespace CmdArgsTests
         [Test]
         public void TestTwo()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "-d"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "-d"});
             Check(rv, s: true, d: true);
         }
 
@@ -133,19 +133,19 @@ namespace CmdArgsTests
         [Test]
         public void TestVal()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgs.CmdArgsParser<Conf>();
 
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-s", "val"}));
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-s", "val"}));
         }
 
 
         [Test]
         public void TestVal2()
         {
-            var p = new CmdArgs.CmdArgsParser();
+            var p = new CmdArgs.CmdArgsParser<Conf>();
 
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<Conf>(new[] {"-s", "--dummy", "val"}));
+                p.ParseCommandLine(new[] {"-s", "--dummy", "val"}));
         }
 
 
@@ -175,9 +175,9 @@ namespace CmdArgsTests
         [Test]
         public void TestFields()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFields>();
 
-            Res<ConfFields> rv = p.ParseCommandLine<ConfFields>(new[] {"-s"});
+            Res<ConfFields> rv = p.ParseCommandLine(new[] {"-s"});
             Check(rv, s: true, d: false);
         }
 

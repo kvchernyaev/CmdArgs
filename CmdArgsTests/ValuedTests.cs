@@ -16,6 +16,7 @@ namespace CmdArgsTests
     [TestFixture]
     public class ValuedTests
     {
+        ////////////////////////////////////////////////////////////////
         class ConfBool
         {
             [ValuedArgument('a', DefaultValue = true)]
@@ -39,8 +40,8 @@ namespace CmdArgsTests
         [Test]
         public void TestBool()
         {
-            var p = new CmdArgsParser();
-            Res<ConfBool> res = p.ParseCommandLine<ConfBool>(new[] {"-a", "-b", "true"});
+            var p = new CmdArgsParser<ConfBool>();
+            Res<ConfBool> res = p.ParseCommandLine(new[] {"-a", "-b", "true"});
             Assert.AreEqual(expected: true, actual: res.Args.A);
             Assert.AreEqual(expected: true, actual: res.Args.B);
             Assert.AreEqual(expected: false, actual: res.Args.C);
@@ -61,9 +62,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDefTypeNotMatch()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(
-                () => p.ParseCommandLine<ConfDefTypeNotMatch>(new[] {"-s"}));
+            var p = new CmdArgsParser<ConfDefTypeNotMatch>();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine(new[] {"-s"}));
         }
 
 
@@ -81,9 +81,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDefErrorMandatory()
         {
-            var p = new CmdArgsParser();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefErrorMandatory>(new[] {"--deftrue"}));
+                CmdArgsParser<ConfDefErrorMandatory>.Parse(new[] {"--deftrue"}));
         }
 
 
@@ -100,9 +99,9 @@ namespace CmdArgsTests
         [Test]
         public void TestDefErrorUsenoarg()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefErrorUsenoarg>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefErrorUsenoarg>(new[] {"--deftrue"}));
+                p.ParseCommandLine(new[] {"--deftrue"}));
         }
 
 
@@ -123,8 +122,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDefVal()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDef> rv = p.ParseCommandLine<ConfDef>(new[] {"--deftrue"});
+            var p = new CmdArgsParser<ConfDef>();
+            Res<ConfDef> rv = p.ParseCommandLine(new[] {"--deftrue"});
 
             Assert.AreEqual(actual: rv.Args.DefTrue, expected: 5);
             Assert.AreEqual(actual: rv.Args.DefFalse, expected: null);
@@ -134,8 +133,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDefVal1()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDef> rv = p.ParseCommandLine<ConfDef>(new[] {"--deffalse"});
+            var p = new CmdArgsParser<ConfDef>();
+            Res<ConfDef> rv = p.ParseCommandLine(new[] {"--deffalse"});
 
             Assert.AreEqual(actual: rv.Args.DefTrue, expected: 5);
             Assert.AreEqual(actual: rv.Args.DefFalse, expected: 5);
@@ -145,8 +144,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDefValNoArg()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDef> rv = p.ParseCommandLine<ConfDef>(new string[] { });
+            var p = new CmdArgsParser<ConfDef>();
+            Res<ConfDef> rv = p.ParseCommandLine(new string[] { });
 
             Assert.AreEqual(actual: rv.Args.DefTrue, expected: 5);
             Assert.AreEqual(actual: rv.Args.DefFalse, expected: null);
@@ -174,8 +173,8 @@ namespace CmdArgsTests
         [Test]
         public void TestIntVal()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "1"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "1"});
 
             Assert.AreEqual(actual: rv.Args.Some, expected: 1);
         }
@@ -184,8 +183,8 @@ namespace CmdArgsTests
         [Test]
         public void TestNegative()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "-1"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "-1"});
 
             Assert.AreEqual(actual: rv.Args.Some, expected: -1);
         }
@@ -194,8 +193,8 @@ namespace CmdArgsTests
         [Test]
         public void TestIntLongVal()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-d", "11"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-d", "11"});
 
             Assert.AreEqual(11L, rv.Args.Dummy);
         }
@@ -205,8 +204,8 @@ namespace CmdArgsTests
         public void TestString()
         {
             var val = "qewr23ыфа";
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-t", val});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-t", val});
 
             Assert.AreEqual(actual: rv.Args.Str, expected: val);
         }
@@ -215,16 +214,16 @@ namespace CmdArgsTests
         [Test]
         public void TestTypeCanNotParsed()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-s", "1.1"}));
+            var p = new CmdArgsParser<Conf>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-s", "1.1"}));
         }
 
 
         [Test]
         public void TestNoDefault()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-s"}));
+            var p = new CmdArgsParser<Conf>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-s"}));
         }
 
 
@@ -250,8 +249,8 @@ namespace CmdArgsTests
         public void TestFloating()
         {
             //var p = new CmdArgsParser(CultureInfo.GetCultureInfo("ru"));
-            var p = new CmdArgsParser();
-            Res<ConfFloating> rv = p.ParseCommandLine<ConfFloating>(new[]
+            var p = new CmdArgsParser<ConfFloating>();
+            Res<ConfFloating> rv = p.ParseCommandLine(new[]
                     {"-s", "1.1", "--doub", "1.123", "--flo", "-123.4534"});
 
             Assert.AreEqual(actual: rv.Args.Dec, expected: 1.1m);
@@ -263,9 +262,9 @@ namespace CmdArgsTests
         [Test]
         public void TestFloatingRus()
         {
-            var p = new CmdArgsParser(CultureInfo.GetCultureInfo("ru"));
+            var p = new CmdArgsParser<ConfFloating>(CultureInfo.GetCultureInfo("ru"));
             //var p = new CmdArgsParser();
-            Res<ConfFloating> rv = p.ParseCommandLine<ConfFloating>(new[]
+            Res<ConfFloating> rv = p.ParseCommandLine(new[]
                     {"-s", "1,1", "--doub", "1,123", "--flo", "-123,4534"});
 
             Assert.AreEqual(actual: rv.Args.Dec, expected: 1.1m);
@@ -286,8 +285,8 @@ namespace CmdArgsTests
         [Test]
         public void TestChar()
         {
-            var p = new CmdArgsParser();
-            Res<ConfChar> rv = p.ParseCommandLine<ConfChar>(new[] {"-c", "u"});
+            var p = new CmdArgsParser<ConfChar>();
+            Res<ConfChar> rv = p.ParseCommandLine(new[] {"-c", "u"});
             Assert.AreEqual(actual: rv.Args.C, expected: 'u');
         }
 
@@ -304,8 +303,8 @@ namespace CmdArgsTests
         [Test]
         public void TestStringSpaces()
         {
-            var p = new CmdArgsParser();
-            Res<ConfString> rv = p.ParseCommandLine<ConfString>(new[] {"-s", "value with value"});
+            var p = new CmdArgsParser<ConfString>();
+            Res<ConfString> rv = p.ParseCommandLine(new[] {"-s", "value with value"});
             Assert.AreEqual("value with value", rv.Args.S);
         }
 
@@ -313,8 +312,8 @@ namespace CmdArgsTests
         [Test]
         public void TestStringSpacesEquality()
         {
-            var p = new CmdArgsParser();
-            Res<ConfString> rv = p.ParseCommandLine<ConfString>(new[] {"-s=value with value"});
+            var p = new CmdArgsParser<ConfString>();
+            Res<ConfString> rv = p.ParseCommandLine(new[] {"-s=value with value"});
             Assert.AreEqual("value with value", rv.Args.S);
         }
     }

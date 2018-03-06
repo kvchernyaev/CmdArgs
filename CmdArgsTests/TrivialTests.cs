@@ -23,16 +23,16 @@ namespace CmdArgsTests
         [Test]
         public void Test()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new string[] { });
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new string[] { });
         }
 
 
         [Test]
         public void TestM()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new string[] {"-"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-"});
             Assert.IsTrue(new[] {"-"}.SequenceEqual(rv.AdditionalArguments));
         }
 
@@ -40,8 +40,8 @@ namespace CmdArgsTests
         [Test]
         public void TestM1()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new string[] {"-1"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-1"});
             Assert.IsTrue(new[] {"-1"}.SequenceEqual(rv.AdditionalArguments));
         }
 
@@ -49,8 +49,8 @@ namespace CmdArgsTests
         [Test]
         public void TestMM()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new string[] {"--"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"--"});
             Assert.IsTrue(new[] {"--"}.SequenceEqual(rv.AdditionalArguments));
         }
 
@@ -58,8 +58,8 @@ namespace CmdArgsTests
         [Test]
         public void TestMM1()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new string[] {"--1"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"--1"});
             Assert.IsTrue(new[] {"--1"}.SequenceEqual(rv.AdditionalArguments));
         }
     }

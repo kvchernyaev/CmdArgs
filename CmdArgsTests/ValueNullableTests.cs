@@ -34,8 +34,8 @@ namespace CmdArgsTests
         [Test]
         public void TestNullableOk()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "34", "-a"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "34", "-a"});
 
             Assert.AreEqual(34, rv.Args.S);
             Assert.AreEqual(null, rv.Args.D);

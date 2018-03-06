@@ -32,17 +32,17 @@ namespace CmdArgsTests
         [Test]
         public void TestCollections()
         {
-            var p = new CmdArgsParser();
-            Res<ConfCollections> res = p.ParseCommandLine<ConfCollections>(new string[] { });
+            var p = new CmdArgsParser<ConfCollections>();
+            Res<ConfCollections> res = p.ParseCommandLine(new string[] { });
         }
 
 
         [Test]
         public void TestIntOk()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfCollections>();
             Res<ConfCollections> res =
-                p.ParseCommandLine<ConfCollections>(new[] {"-a", "1", "2", "-l", "-3", "45"});
+                p.ParseCommandLine(new[] {"-a", "1", "2", "-l", "-3", "45"});
 
             Assert.IsTrue(new[] {1, 2}.SequenceEqual(res.Args.Array));
             Assert.IsTrue(new[] {-3, 45}.SequenceEqual(res.Args.List));
@@ -52,9 +52,10 @@ namespace CmdArgsTests
         [Test]
         public void TestNoVal()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfCollections>(new[] {"-a"}));
+            var p = new CmdArgsParser<ConfCollections>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-a"}));
         }
+
 
 
         ////////////////////////////////////////////////////////////////
@@ -81,9 +82,9 @@ namespace CmdArgsTests
         [Test]
         public void TestCollectionDefOk()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfCollectionDef>();
             Res<ConfCollectionDef> res =
-                p.ParseCommandLine<ConfCollectionDef>(new[] {"-a", "-l"});
+                p.ParseCommandLine(new[] {"-a", "-l"});
 
             Assert.IsTrue(new[] {2}.SequenceEqual(res.Args.Array));
             Assert.IsTrue(new[] {2, 3}.SequenceEqual(res.Args.Array1));
@@ -105,8 +106,8 @@ namespace CmdArgsTests
         [Test]
         public void TestOne()
         {
-            var p = new CmdArgsParser();
-            Res<ConfOne> r = p.ParseCommandLine<ConfOne>(new[] {"-i", "2", "3"});
+            var p = new CmdArgsParser<ConfOne>();
+            Res<ConfOne> r = p.ParseCommandLine(new[] {"-i", "2", "3"});
             Assert.AreEqual(2, r.Args.I);
             Assert.IsTrue(new[] {"3"}.SequenceEqual(r.AdditionalArguments));
         }
@@ -120,6 +121,7 @@ namespace CmdArgsTests
             public int[] Array { get; set; }
 
 
+            // ReSharper disable once UnusedMember.Local
             public static Predicate<int> Array_Predicate = x => x > 10;
         }
 
@@ -128,9 +130,9 @@ namespace CmdArgsTests
         [Test]
         public void TestDefPredicateBad()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefPredicateBad>();
             Assert.Throws<ConfException>(
-                () => p.ParseCommandLine<ConfDefPredicateBad>(new[] {"-i"}));
+                () => p.ParseCommandLine(new[] {"-i"}));
         }
 
 
@@ -142,6 +144,7 @@ namespace CmdArgsTests
             public int[] Array { get; set; }
 
 
+            // ReSharper disable once UnusedMember.Local
             public static Predicate<int[]> Array_Predicate = x => x.Length > 1;
         }
 
@@ -150,9 +153,9 @@ namespace CmdArgsTests
         [Test]
         public void TestDefPredicateCollectionBad()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefPredicateCollectionBad>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefPredicateCollectionBad>(new[] {"-i"}));
+                p.ParseCommandLine(new[] {"-i"}));
         }
 
 

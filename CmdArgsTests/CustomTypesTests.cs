@@ -17,9 +17,6 @@ namespace CmdArgsTests
     public class CustomTypesTests
     {
         ////////////////////////////////////////////////////////////////
-
-
-
         class P
         {
             public int A;
@@ -48,6 +45,7 @@ namespace CmdArgsTests
             #endregion
 
 
+            // ReSharper disable once UnusedMember.Local
             public static P Deserialize(string value)
             {
                 string[] ss = value.Split(':');
@@ -72,17 +70,15 @@ namespace CmdArgsTests
         [Test]
         public void TestOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfOk> res = p.ParseCommandLine<ConfOk>(new[] {"-p", "23:64"});
+            var p = new CmdArgsParser<ConfOk>();
+            Res<ConfOk> res = p.ParseCommandLine(new[] {"-p", "23:64"});
             Assert.AreEqual(23, res.Args.P.A);
             Assert.AreEqual(64, res.Args.P.B);
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfArray
         {
             [CustomArgument('a')] public P[] A;
@@ -94,8 +90,8 @@ namespace CmdArgsTests
         [Test]
         public void TestArray()
         {
-            var p = new CmdArgsParser();
-            Res<ConfArray> res = p.ParseCommandLine<ConfArray>(new[]
+            var p = new CmdArgsParser<ConfArray>();
+            Res<ConfArray> res = p.ParseCommandLine(new[]
                     {"-a", "23:64", "4:56", "-l", "59:84", "58:81"});
 
             Assert.AreEqual(2, res.Args.A.Length);
@@ -130,17 +126,15 @@ namespace CmdArgsTests
         [Test]
         public void TestDefault()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDefault> res = p.ParseCommandLine<ConfDefault>(new[] {"-p"});
+            var p = new CmdArgsParser<ConfDefault>();
+            Res<ConfDefault> res = p.ParseCommandLine(new[] {"-p"});
             Assert.AreEqual(898, res.Args.P.A);
             Assert.AreEqual(1, res.Args.P.B);
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefNotAllowed
         {
             [CustomArgument('p', AllowedValues = new object[] {"1:4", "1:3", "34:83"},
@@ -153,16 +147,14 @@ namespace CmdArgsTests
         [Test]
         public void TestDefNotAllowed()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefNotAllowed>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefNotAllowed>(new[] {"-p", "1:3"}));
+                p.ParseCommandLine(new[] {"-p", "1:3"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfAllowed
         {
             [CustomArgument('p', AllowedValues = new object[] {"1:4", "1:3", "34:83"})]
@@ -174,8 +166,8 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfAllowed> res = p.ParseCommandLine<ConfAllowed>(new[] {"-p", "1:3"});
+            var p = new CmdArgsParser<ConfAllowed>();
+            Res<ConfAllowed> res = p.ParseCommandLine(new[] {"-p", "1:3"});
             Assert.AreEqual(1, res.Args.P.A);
             Assert.AreEqual(3, res.Args.P.B);
         }
@@ -184,15 +176,13 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedNo()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<ConfAllowed>(new[] {"-p", "1:5"}));
+            var p = new CmdArgsParser<ConfAllowed>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-p", "1:5"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefarrayOne
         {
             [CustomArgument('p', AllowedValues = new object[] {"1:4", "1:3", "34:83"},
@@ -205,18 +195,16 @@ namespace CmdArgsTests
         [Test]
         public void TestDefarrayOne()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDefarrayOne> res = p.ParseCommandLine<ConfDefarrayOne>(new[] {"-p"});
+            var p = new CmdArgsParser<ConfDefarrayOne>();
+            Res<ConfDefarrayOne> res = p.ParseCommandLine(new[] {"-p"});
             Assert.AreEqual(1, res.Args.P.Length);
             Assert.AreEqual(1, res.Args.P[0].A);
             Assert.AreEqual(3, res.Args.P[0].B);
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefarray
         {
             [CustomArgument('p', AllowedValues = new object[] {"1:4", "1:3", "34:83"},
@@ -229,8 +217,8 @@ namespace CmdArgsTests
         [Test]
         public void TestDefarray()
         {
-            var p = new CmdArgsParser();
-            Res<ConfDefarray> res = p.ParseCommandLine<ConfDefarray>(new[] {"-p"});
+            var p = new CmdArgsParser<ConfDefarray>();
+            Res<ConfDefarray> res = p.ParseCommandLine(new[] {"-p"});
             Assert.AreEqual(2, res.Args.P.Length);
             Assert.AreEqual(1, res.Args.P[0].A);
             Assert.AreEqual(3, res.Args.P[0].B);
@@ -239,10 +227,8 @@ namespace CmdArgsTests
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefarrayPredicateCol
         {
             [CustomArgument('p', DefaultValue = new[] {"1:3", "1:4"})]
@@ -257,9 +243,9 @@ namespace CmdArgsTests
         [Test]
         public void TestDefarrayPredicateCol()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefarrayPredicateCol>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefarrayPredicateCol>(new[] {"-p"}));
+                p.ParseCommandLine(new[] {"-p"}));
         }
 
 
@@ -283,16 +269,14 @@ namespace CmdArgsTests
         [Test]
         public void TestDefarrayPredicate()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefarrayPredicate>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefarrayPredicate>(new[] {"-p"}));
+                p.ParseCommandLine(new[] {"-p"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfDefaultByPredicate
         {
             [CustomArgument('p', DefaultValue = "9:83")]
@@ -309,16 +293,14 @@ namespace CmdArgsTests
         [Test]
         public void TestDefaultByPredicate()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfDefaultByPredicate>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfDefaultByPredicate>(new[] {"-p", "1:3"}));
+                p.ParseCommandLine(new[] {"-p", "1:3"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfUseDef
         {
             [CustomArgument('p', DefaultValue = "9:83", UseDefWhenNoArg = true)]
@@ -330,8 +312,8 @@ namespace CmdArgsTests
         [Test]
         public void TestUseDef()
         {
-            var p = new CmdArgsParser();
-            Res<ConfUseDef> r = p.ParseCommandLine<ConfUseDef>(new string[] { });
+            var p = new CmdArgsParser<ConfUseDef>();
+            Res<ConfUseDef> r = p.ParseCommandLine(new string[] { });
             Assert.AreEqual(9, r.Args.P.A);
             Assert.AreEqual(83, r.Args.P.B);
         }
@@ -340,8 +322,8 @@ namespace CmdArgsTests
         [Test]
         public void TestUseDefNoVal()
         {
-            var p = new CmdArgsParser();
-            Res<ConfUseDef> r = p.ParseCommandLine<ConfUseDef>(new[] {"-p"});
+            var p = new CmdArgsParser<ConfUseDef>();
+            Res<ConfUseDef> r = p.ParseCommandLine(new[] {"-p"});
             Assert.AreEqual(9, r.Args.P.A);
             Assert.AreEqual(83, r.Args.P.B);
         }
@@ -350,17 +332,15 @@ namespace CmdArgsTests
         [Test]
         public void TestUseDefVal()
         {
-            var p = new CmdArgsParser();
-            Res<ConfUseDef> r = p.ParseCommandLine<ConfUseDef>(new[] {"-p", "1:2"});
+            var p = new CmdArgsParser<ConfUseDef>();
+            Res<ConfUseDef> r = p.ParseCommandLine(new[] {"-p", "1:2"});
             Assert.AreEqual(1, r.Args.P.A);
             Assert.AreEqual(2, r.Args.P.B);
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfAllowedByPredicate
         {
             [CustomArgument('p', AllowedValues = new object[] {"1:4", "1:3", "34:83"})]
@@ -377,16 +357,14 @@ namespace CmdArgsTests
         [Test]
         public void TestAllowedByPredicate()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAllowedByPredicate>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfAllowedByPredicate>(new[] {"-p", "1:3"}));
+                p.ParseCommandLine(new[] {"-p", "1:3"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfCantDeser
         {
             [CustomArgument('p')] public P P;
@@ -397,16 +375,14 @@ namespace CmdArgsTests
         [Test]
         public void TestCantDeser()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfCantDeser>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfCantDeser>(new[] {"-p", "13"}));
+                p.ParseCommandLine(new[] {"-p", "13"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfNoDesr
         {
             [CustomArgument('p')] public NoDeser P;
@@ -425,16 +401,14 @@ namespace CmdArgsTests
         [Test]
         public void TestNoDesr()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfNoDesr>();
             Assert.Throws<ConfException>(
-                () => p.ParseCommandLine<ConfNoDesr>(new[] {"-p", "23:64"}));
+                () => p.ParseCommandLine(new[] {"-p", "23:64"}));
         }
 
 
+
         ////////////////////////////////////////////////////////////////
-
-
-
         class ConfBadSign
         {
             [CustomArgument('p')] public BadSign P;
@@ -447,6 +421,7 @@ namespace CmdArgsTests
                 public int B;
 
 
+                // ReSharper disable once UnusedMember.Local
                 public static BadSign Deserialize(string[] value)
                 {
                     string[] ss = value[0].Split(':');
@@ -464,9 +439,9 @@ namespace CmdArgsTests
         [Test]
         public void TestBadSign()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfBadSign>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfBadSign>(new[] {"-p", "23:64"}));
+                p.ParseCommandLine(new[] {"-p", "23:64"}));
         }
 
 

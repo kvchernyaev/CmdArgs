@@ -63,8 +63,8 @@ namespace CmdArgsTests
         [Test]
         public void TestFull()
         {
-            var p = new CmdArgsParser();
-            Res<FluidBaseConf> r = p.ParseCommandLine<FluidBaseConf>(new[]
+            var p = new CmdArgsParser<FluidBaseConf>();
+            Res<FluidBaseConf> r = p.ParseCommandLine(new[]
                 {
                     "--labels=bus_data OR bus_longtime_data",
                     "--defaultsFile=core/liquibase_CIS-DB.CIS_custom.properties",
@@ -125,8 +125,8 @@ namespace CmdArgsTests
         [Test]
         public void Test()
         {
-            var p = new CmdArgsParser();
-            Res<FluidBaseConf> r = p.ParseCommandLine<FluidBaseConf>(new[]
+            var p = new CmdArgsParser<FluidBaseConf>();
+            Res<FluidBaseConf> r = p.ParseCommandLine(new[]
                 {
                     "--labels=bus_data OR bus_longtime_data",
                     "--defaultsFile=core/liquibase_CIS-DB.CIS_custom.properties",
@@ -141,8 +141,8 @@ namespace CmdArgsTests
         [Test]
         public void Test1()
         {
-            var p = new CmdArgsParser();
-            Res<FluidBaseConf> r = p.ParseCommandLine<FluidBaseConf>(new[]
+            var p = new CmdArgsParser<FluidBaseConf>();
+            Res<FluidBaseConf> r = p.ParseCommandLine(new[]
                 {
                     "--labels", "bus_data OR bus_longtime_data",
                     "--defaultsFile=core/liquibase_CIS-DB.CIS_custom.properties",
@@ -156,8 +156,8 @@ namespace CmdArgsTests
         [Test]
         public void Test2()
         {
-            var p = new CmdArgsParser();
-            Res<FluidBaseConf> r = p.ParseCommandLine<FluidBaseConf>(new[]
+            var p = new CmdArgsParser<FluidBaseConf>();
+            Res<FluidBaseConf> r = p.ParseCommandLine(new[]
                 {
                     "--labels", "bus_data OR bus_longtime_data",
                     "--contexts", "Light", "prod", "sync_prod", "sync",
@@ -171,8 +171,8 @@ namespace CmdArgsTests
         [Test]
         public void Test3()
         {
-            var p = new CmdArgsParser();
-            Res<FluidBaseConf> r = p.ParseCommandLine<FluidBaseConf>(new[]
+            var p = new CmdArgsParser<FluidBaseConf>();
+            Res<FluidBaseConf> r = p.ParseCommandLine(new[]
                 {
                     "update",
                     "--labels", "bus_data OR bus_longtime_data",
@@ -186,8 +186,8 @@ namespace CmdArgsTests
         [Test]
         public void Test4()
         {
-            var p = new CmdArgsParser();
-            Res<FluidBaseConf> r = p.ParseCommandLine<FluidBaseConf>(new[]
+            var p = new CmdArgsParser<FluidBaseConf>();
+            Res<FluidBaseConf> r = p.ParseCommandLine(new[]
                 {
                     "--labels", "bus_data OR bus_longtime_data",
                     "--contexts", "Light", "prod", "sync_prod", "sync",

@@ -15,19 +15,35 @@ namespace CmdArgsTests
     [TestFixture]
     public class MandatoryAndMultipleTests
     {
+        class Conf
+        {
+            [SwitchArgument('s', "some", "", Mandatory = true)]
+            public bool Some { get; set; }
+
+
+            [SwitchArgument('m', "mult", "", AllowMultiple = true)]
+            public bool Mult { get; set; }
+
+
+            [SwitchArgument('n', "nomult", "", AllowMultiple = false)]
+            public bool NoMult { get; set; }
+        }
+
+
+
         [Test]
         public void TestNo()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new string[] { }));
+            var p = new CmdArgsParser<Conf>();
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new string[] { }));
         }
 
 
         [Test]
         public void TestYes()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s"});
             Check(rv, true, false, false);
         }
 
@@ -35,8 +51,8 @@ namespace CmdArgsTests
         [Test]
         public void TestNoMult()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "--nomult"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "--nomult"});
             Check(rv, true, true, false);
         }
 
@@ -44,17 +60,17 @@ namespace CmdArgsTests
         [Test]
         public void TestNoMult2()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<Conf>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<Conf>(new[] {"--nomult", "--nomult"}));
+                p.ParseCommandLine(new[] {"--nomult", "--nomult"}));
         }
 
 
         [Test]
         public void TestMult1()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "--mult"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "--mult"});
             Check(rv, true, false, true);
         }
 
@@ -62,8 +78,8 @@ namespace CmdArgsTests
         [Test]
         public void TestMult2()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "--mult", "--mult"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "--mult", "--mult"});
             Check(rv, true, false, true);
         }
 
@@ -71,8 +87,8 @@ namespace CmdArgsTests
         [Test]
         public void TestMult3()
         {
-            var p = new CmdArgsParser();
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-s", "--mult", "--mult", "--mult"});
+            var p = new CmdArgsParser<Conf>();
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-s", "--mult", "--mult", "--mult"});
             Check(rv, true, false, true);
         }
 
@@ -101,22 +117,6 @@ namespace CmdArgsTests
                     Assert.IsTrue(v != null && v.Length == vals.Length && v.SequenceEqual(vals));
                 }
             }
-        }
-
-
-
-        class Conf
-        {
-            [SwitchArgument('s', "some", "", Mandatory = true)]
-            public bool Some { get; set; }
-
-
-            [SwitchArgument('m', "mult", "", AllowMultiple = true)]
-            public bool Mult { get; set; }
-
-
-            [SwitchArgument('n', "nomult", "", AllowMultiple = false)]
-            public bool NoMult { get; set; }
         }
     }
 }

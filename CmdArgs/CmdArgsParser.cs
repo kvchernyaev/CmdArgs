@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CmdArgs
 {
-    public class CmdArgsParser
+    public class CmdArgsParser<T> where T : new()
     {
         readonly IFormatProvider _culture = CultureInfo.InvariantCulture;
         // ReSharper disable MemberCanBePrivate.Global
@@ -42,7 +42,15 @@ namespace CmdArgs
         }
 
 
-        public Res<T> ParseCommandLine<T>(string[] args) where T : new()
+        public static Res<T> Parse(string[] args)
+        {
+            var p = new CmdArgsParser<T>();
+            Res<T> res = p.ParseCommandLine(args);
+            return res;
+        }
+
+
+        public Res<T> ParseCommandLine(string[] args)
         {
             var rv = new Res<T> {Args = new T()};
             ParseCommandLine(args, rv);
@@ -50,19 +58,13 @@ namespace CmdArgs
         }
 
 
-        public void ParseCommandLine<T>(string[] args, Res<T> res)
+        public void ParseCommandLine(string[] args, Res<T> res)
         {
             if (res.AdditionalArguments == null)
                 res.AdditionalArguments = new List<string>();
             if (res.UnknownArguments == null)
                 res.UnknownArguments = new List<Tuple<string, string[]>>();
-            /*
-             * 
-            --defaultsFile="core/liquibase_CIS-DB.CIS_custom.properties" ^
-            --labels="bus_data OR bus_longtime_data" ^
-            --contexts="Light,prod, sync_prod,sync" ^
-                update ^
-             */
+
             var bindings = new Bindings<T>(AllowUnknownArguments)
                 {
                     Args = res,
@@ -96,7 +98,7 @@ namespace CmdArgs
         }
 
 
-        bool TryParseArgument<T>(string[] args, int curI, out int nextI, Bindings<T> bindings)
+        bool TryParseArgument(string[] args, int curI, out int nextI, Bindings<T> bindings)
         {
             string arg = args[curI];
             nextI = curI + 1;
@@ -135,7 +137,7 @@ namespace CmdArgs
         static readonly char[] EqualityModeValSeparators = {';', ',', ' '};
 
 
-        string[] GetValues<T>(Bindings<T> bindings, string[] args, string arg, bool islong,
+        string[] GetValues(Bindings<T> bindings, string[] args, string arg, bool islong,
             ref int nextI,
             out string argName, out Binding b)
         {
@@ -237,7 +239,7 @@ namespace CmdArgs
 
                 if (attr.Argument is ValuedArgument va)
                 {
-                    if (va.Culture == null) va.Culture = this._culture;
+                    if (va.Culture == null) va.Culture = _culture;
 
                     Type fieldType = GetFieldType(mi);
                     va.SetTypeAndCheck(fieldType);
@@ -260,19 +262,6 @@ namespace CmdArgs
             }
 
             return rv;
-        }
-
-
-        static bool IsTypeDerivedFromGenericType(Type typeToCheck, Type genericType)
-        {
-            if (typeToCheck == typeof(object))
-                return false;
-            if (typeToCheck == null)
-                return false;
-            if (typeToCheck.IsGenericType &&
-                typeToCheck.GetGenericTypeDefinition() == genericType)
-                return true;
-            return IsTypeDerivedFromGenericType(typeToCheck.BaseType, genericType);
         }
 
 

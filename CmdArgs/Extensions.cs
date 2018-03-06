@@ -31,5 +31,18 @@ namespace CmdArgs
                 value = s.Substring(ieq + 1);
             }
         }
+
+
+        public static bool IsTypeDerivedFromGenericType(this Type typeToCheck, Type genericType)
+        {
+            if (typeToCheck == typeof(object))
+                return false;
+            if (typeToCheck == null)
+                return false;
+            if (typeToCheck.IsGenericType &&
+                typeToCheck.GetGenericTypeDefinition() == genericType)
+                return true;
+            return IsTypeDerivedFromGenericType(typeToCheck.BaseType, genericType);
+        }
     }
 }

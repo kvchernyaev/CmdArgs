@@ -16,9 +16,6 @@ namespace CmdArgsTests
     public class SwitchConfExceptionTests
     {
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfWrongSwitch
         {
             [SwitchArgument('s')] public int Some; // must be bool
@@ -29,15 +26,12 @@ namespace CmdArgsTests
         [Test]
         public void TestConfWrongSwitch()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfWrongSwitch>(new[] {"-s"}));
+            var p = new CmdArgsParser<ConfWrongSwitch>();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine(new[] {"-s"}));
         }
 
 
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfManyLong
         {
             [SwitchArgument('s', "some", "some description")]
@@ -53,15 +47,12 @@ namespace CmdArgsTests
         [Test]
         public void TestConfWrongLong()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfManyLong>(new[] {"-s"}));
+            var p = new CmdArgsParser<ConfManyLong>();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine(new[] {"-s"}));
         }
 
 
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfManyShort
         {
             [SwitchArgument('s')]
@@ -77,15 +68,12 @@ namespace CmdArgsTests
         [Test]
         public void TestConfWrongShort()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfManyShort>(new[] {"-s"}));
+            var p = new CmdArgsParser<ConfManyShort>();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine(new[] {"-s"}));
         }
 
 
         //////////////////////////////////////////////////////////////
-
-
-
         class ConfNotLetter
         {
             [SwitchArgument('1')]
@@ -97,8 +85,8 @@ namespace CmdArgsTests
         [Test]
         public void TestNotLetter()
         {
-            var p = new CmdArgsParser();
-            Assert.Throws<ConfException>(() => p.ParseCommandLine<ConfNotLetter>(new[] {"-s"}));
+            var p = new CmdArgsParser<ConfNotLetter>();
+            Assert.Throws<ConfException>(() => p.ParseCommandLine(new[] {"-s"}));
         }
 
 

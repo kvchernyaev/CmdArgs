@@ -15,28 +15,40 @@ namespace CmdArgsTests
     [TestFixture]
     public class UnknownArgTests
     {
+        class Conf
+        {
+            [SwitchArgument('s', "some", "some description")]
+            public bool Some { get; set; }
+
+
+            [SwitchArgument('d', "dummy", "dummy description")]
+            public bool Dummy { get; set; }
+        }
+
+
+
         [Test]
         public void TestForbidShortname()
         {
-            var p = new CmdArgsParser {AllowUnknownArguments = false};
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"-u"}));
+            var p = new CmdArgsParser<Conf> {AllowUnknownArguments = false};
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"-u"}));
         }
 
 
         [Test]
         public void TestForbidLongname()
         {
-            var p = new CmdArgsParser {AllowUnknownArguments = false};
-            Assert.Throws<CmdException>(() => p.ParseCommandLine<Conf>(new[] {"--unk"}));
+            var p = new CmdArgsParser<Conf> {AllowUnknownArguments = false};
+            Assert.Throws<CmdException>(() => p.ParseCommandLine(new[] {"--unk"}));
         }
 
 
         [Test]
         public void TestShortname()
         {
-            var p = new CmdArgsParser {AllowUnknownArguments = true};
+            var p = new CmdArgsParser<Conf> {AllowUnknownArguments = true};
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"-u"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"-u"});
             Check(rv, s: false, d: false, unk: "u");
         }
 
@@ -44,9 +56,9 @@ namespace CmdArgsTests
         [Test]
         public void TestLongname()
         {
-            var p = new CmdArgsParser {AllowUnknownArguments = true};
+            var p = new CmdArgsParser<Conf> {AllowUnknownArguments = true};
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--unk"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"--unk"});
             Check(rv, s: false, d: false, unk: "unk");
         }
 
@@ -54,9 +66,9 @@ namespace CmdArgsTests
         [Test]
         public void TestValues()
         {
-            var p = new CmdArgsParser {AllowUnknownArguments = true};
+            var p = new CmdArgsParser<Conf> {AllowUnknownArguments = true};
 
-            Res<Conf> rv = p.ParseCommandLine<Conf>(new[] {"--unk", "val1", "val2"});
+            Res<Conf> rv = p.ParseCommandLine(new[] {"--unk", "val1", "val2"});
             Check(rv, s: false, d: false, unk: "unk", vals: new[] {"val1", "val2"});
         }
 
@@ -76,18 +88,6 @@ namespace CmdArgsTests
                 string[] v = rv.UnknownArguments[0].Item2;
                 Assert.IsTrue(v != null && v.Length == vals.Length && v.SequenceEqual(vals));
             }
-        }
-
-
-
-        class Conf
-        {
-            [SwitchArgument('s', "some", "some description")]
-            public bool Some { get; set; }
-
-
-            [SwitchArgument('d', "dummy", "dummy description")]
-            public bool Dummy { get; set; }
         }
     }
 }

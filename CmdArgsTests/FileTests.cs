@@ -29,9 +29,9 @@ namespace CmdArgsTests
         [Test]
         public void TestWrongFieldType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfWrongFieldType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfWrongFieldType>(new[] {"-f", "./sadf"}));
+                p.ParseCommandLine(new[] {"-f", "./sadf"}));
         }
 
 
@@ -47,9 +47,9 @@ namespace CmdArgsTests
         [Test]
         public void TestWrongArgType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfWrongArgType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfWrongArgType>(new string[] { }));
+                p.ParseCommandLine(new string[] { }));
         }
 
 
@@ -65,8 +65,8 @@ namespace CmdArgsTests
         [Test]
         public void TestFileOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfFile> res = p.ParseCommandLine<ConfFile>(new[] {"-f", "./asdf"});
+            var p = new CmdArgsParser<ConfFile>();
+            Res<ConfFile> res = p.ParseCommandLine(new[] {"-f", "./asdf"});
             Assert.AreEqual("asdf", res.Args.File.Name);
         }
 
@@ -74,18 +74,18 @@ namespace CmdArgsTests
         [Test]
         public void TestFileWrongUrl()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFile>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFile>(new[] {"-f", "./asdf:asdf"}));
+                p.ParseCommandLine(new[] {"-f", "./asdf:asdf"}));
         }
 
 
         [Test]
         public void TestFileWrongUrl1()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFile>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFile>(new[] {"-f", "./asdf\""}));
+                p.ParseCommandLine(new[] {"-f", "./asdf\""}));
         }
 
 
@@ -103,8 +103,8 @@ namespace CmdArgsTests
         {
             Assembly a = Assembly.GetExecutingAssembly();
 
-            var p = new CmdArgsParser();
-            Res<ConfFileEx> res = p.ParseCommandLine<ConfFileEx>(new[] {"-f", a.Location});
+            var p = new CmdArgsParser<ConfFileEx>();
+            Res<ConfFileEx> res = p.ParseCommandLine(new[] {"-f", a.Location});
             Assert.AreEqual(true, res.Args.File.Exists);
             Assert.AreEqual(a.Location, res.Args.File.FullName);
         }
@@ -113,9 +113,9 @@ namespace CmdArgsTests
         [Test]
         public void TestFileNotExists()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFileEx>();
             Assert.Throws<CmdException>(
-                () => p.ParseCommandLine<ConfFileEx>(new[] {"-f", "./asdf"}));
+                () => p.ParseCommandLine(new[] {"-f", "./asdf"}));
         }
 
 
@@ -132,8 +132,8 @@ namespace CmdArgsTests
         [Test]
         public void TestFileDefaultValueOk()
         {
-            var p = new CmdArgsParser();
-            Res<ConfFileDefaultValue> r = p.ParseCommandLine<ConfFileDefaultValue>(new[] {"-f"});
+            var p = new CmdArgsParser<ConfFileDefaultValue>();
+            Res<ConfFileDefaultValue> r = p.ParseCommandLine(new[] {"-f"});
             Assert.AreEqual("prog.conf", r.Args.File.Name);
         }
 
@@ -151,9 +151,9 @@ namespace CmdArgsTests
         [Test]
         public void TestFileAllowedValuesBadType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFileAllowedValuesBadType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfFileAllowedValuesBadType>(new[] {"-f", "./asdf"}));
+                p.ParseCommandLine(new[] {"-f", "./asdf"}));
         }
 
 
@@ -170,10 +170,10 @@ namespace CmdArgsTests
         [Test]
         public void TestFileAllowedValuesOk()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFileAllowedValues>();
             // test not exactly equality
             Res<ConfFileAllowedValues> res =
-                p.ParseCommandLine<ConfFileAllowedValues>(new[] {"-f", "./a.conf"});
+                p.ParseCommandLine(new[] {"-f", "./a.conf"});
             var fi = new FileInfo("./a.conf");
             Assert.AreEqual(fi.FullName, res.Args.File.FullName);
         }
@@ -182,10 +182,10 @@ namespace CmdArgsTests
         [Test]
         public void TestFileAllowedValuesBad()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFileAllowedValues>();
             // test not exactly equality
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFileAllowedValues>(new[] {"-f", "./a.confNO"}));
+                p.ParseCommandLine(new[] {"-f", "./a.confNO"}));
         }
 
 
@@ -201,9 +201,9 @@ namespace CmdArgsTests
         [Test]
         public void TestArray()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfArray>();
             Res<ConfArray> res =
-                p.ParseCommandLine<ConfArray>(new[] {"-f", "./a.conf", "./b.conf"});
+                p.ParseCommandLine(new[] {"-f", "./a.conf", "./b.conf"});
             var fi = new FileInfo("./a");
             string path = fi.DirectoryName;
             Assert.IsTrue(res.Args.Files.Select(x => x.FullName)
@@ -223,8 +223,8 @@ namespace CmdArgsTests
         [Test]
         public void TestList()
         {
-            var p = new CmdArgsParser();
-            Res<ConfList> res = p.ParseCommandLine<ConfList>(new[] {"-f", "./a.conf", "./b.conf"});
+            var p = new CmdArgsParser<ConfList>();
+            Res<ConfList> res = p.ParseCommandLine(new[] {"-f", "./a.conf", "./b.conf"});
             var fi = new FileInfo("./a");
             string path = fi.DirectoryName;
             Assert.IsTrue(res.Args.Files.Select(x => x.FullName)

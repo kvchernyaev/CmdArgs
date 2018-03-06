@@ -28,9 +28,9 @@ namespace CmdArgsTests
         [Test]
         public void TestWrongFieldType()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfWrongFieldType>();
             Assert.Throws<ConfException>(() =>
-                p.ParseCommandLine<ConfWrongFieldType>(new[] {"-Dname=val"}));
+                p.ParseCommandLine(new[] {"-Dname=val"}));
         }
 
 
@@ -47,9 +47,9 @@ namespace CmdArgsTests
         [Test]
         public void TestOkOne()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
 
-            Res<ConfOkOne> r = p.ParseCommandLine<ConfOkOne>(new[] {"-Dname=val"});
+            Res<ConfOkOne> r = p.ParseCommandLine(new[] {"-Dname=val"});
 
             Assert.IsNotNull(r.Args.Uns);
             Assert.AreEqual(1, r.Args.Uns.Count);
@@ -61,9 +61,9 @@ namespace CmdArgsTests
         [Test]
         public void TestLongName()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
 
-            Res<ConfOkOne> r = p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINEname=val"});
+            Res<ConfOkOne> r = p.ParseCommandLine(new[] {"--DEFINEname=val"});
 
             Assert.IsNotNull(r.Args.Uns);
             Assert.AreEqual(1, r.Args.Uns.Count);
@@ -75,10 +75,10 @@ namespace CmdArgsTests
         [Test]
         public void TestAdditional()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             p.AllowAdditionalArguments = true;
             Res<ConfOkOne> r =
-                p.ParseCommandLine<ConfOkOne>(new[] {"-Dname=val", "additional", "--unknown"});
+                p.ParseCommandLine(new[] {"-Dname=val", "additional", "--unknown"});
 
             Assert.IsNotNull(r.Args.Uns);
             Assert.AreEqual(1, r.Args.Uns.Count);
@@ -92,9 +92,9 @@ namespace CmdArgsTests
         [Test]
         public void TestNullValue()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
 
-            Res<ConfOkOne> r = p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINEname"});
+            Res<ConfOkOne> r = p.ParseCommandLine(new[] {"--DEFINEname"});
 
             Assert.IsNotNull(r.Args.Uns);
             Assert.AreEqual(1, r.Args.Uns.Count);
@@ -106,9 +106,9 @@ namespace CmdArgsTests
         [Test]
         public void TestEmptyValue()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
 
-            Res<ConfOkOne> r = p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINEname="});
+            Res<ConfOkOne> r = p.ParseCommandLine(new[] {"--DEFINEname="});
 
             Assert.IsNotNull(r.Args.Uns);
             Assert.AreEqual(1, r.Args.Uns.Count);
@@ -120,54 +120,54 @@ namespace CmdArgsTests
         [Test]
         public void TestEmpty()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] {"-D"}));
+                p.ParseCommandLine(new[] {"-D"}));
         }
 
 
         [Test]
         public void TestOnlyEq()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] {"-D="}));
+                p.ParseCommandLine(new[] {"-D="}));
         }
 
 
         [Test]
         public void TestEmptyName()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] {"-D=val"}));
+                p.ParseCommandLine(new[] {"-D=val"}));
         }
 
 
         [Test]
         public void TestLongEmpty()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINE"}));
+                p.ParseCommandLine(new[] {"--DEFINE"}));
         }
 
 
         [Test]
         public void TestLongOnlyEq()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINE="}));
+                p.ParseCommandLine(new[] {"--DEFINE="}));
         }
 
 
         [Test]
         public void TestLongEmptyName()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOkOne>();
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfOkOne>(new[] {"--DEFINE=val"}));
+                p.ParseCommandLine(new[] {"--DEFINE=val"}));
         }
 
 
@@ -187,9 +187,9 @@ namespace CmdArgsTests
         [Test]
         public void TestTwo()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfTwo>();
 
-            Res<ConfTwo> r = p.ParseCommandLine<ConfTwo>(new[]
+            Res<ConfTwo> r = p.ParseCommandLine(new[]
                     {"-Dname=val", "-Mwe=34", "-Dzzxcv=gf", "--MANcv=123"});
 
             Assert.IsNotNull(r.Args.Uns);
@@ -207,11 +207,6 @@ namespace CmdArgsTests
             Assert.AreEqual("123", r.Args.Man[1].Value);
         }
 
-
-        ////////////////////////////////////////////////////////////////
-
-
-        ////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////
     }

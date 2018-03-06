@@ -17,72 +17,72 @@ namespace CmdArgsTester
     {
         static void Main(string[] a)
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfFullExample>();
             p.AllowUnknownArguments = false;
             p.AllowAdditionalArguments = false;
 
             Res<ConfFullExample> r;
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--myenum", "1"});
+            r = p.ParseCommandLine(new[] {"--myenum", "1"});
             Assert.AreEqual(MyEnum.One, r.Args.MyEnumVal);
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--myenum", "Three"});
+            r = p.ParseCommandLine(new[] {"--myenum", "Three"});
             Assert.AreEqual(MyEnum.Three, r.Args.MyEnumVal);
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--SwitchOne"});
+            r = p.ParseCommandLine(new[] {"--SwitchOne"});
             Assert.AreEqual(true, r.Args.SwitchOne);
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"-ab"});
+            r = p.ParseCommandLine(new[] {"-ab"});
             Assert.AreEqual(true, r.Args.SwitchOne);
             Assert.AreEqual(true, r.Args.SwitchTwo);
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--IntField", "-34", "--IntDefault"});
+            r = p.ParseCommandLine(new[] {"--IntField", "-34", "--IntDefault"});
             Assert.AreEqual(-34, r.Args.IntField);
             Assert.AreEqual(5, r.Args.IntDefault);
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--IntArray", "-34", "4", "234"});
+            r = p.ParseCommandLine(new[] {"--IntArray", "-34", "4", "234"});
             Assert.IsTrue(new[] {-34, 4, 234}.SequenceEqual(r.Args.IntArray));
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--IntList", "-34", "4", "234"});
+            r = p.ParseCommandLine(new[] {"--IntList", "-34", "4", "234"});
             Assert.IsTrue(new[] {-34, 4, 234}.SequenceEqual(r.Args.IntList));
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--StringRegex", "bqwerty"});
+            r = p.ParseCommandLine(new[] {"--StringRegex", "bqwerty"});
             Assert.AreEqual("bqwerty", r.Args.StringRegex);
 
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFullExample>(new[] {"--StringRegex", "qwe"}));
+                p.ParseCommandLine(new[] {"--StringRegex", "qwe"}));
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--IntRegex", "208"});
+            r = p.ParseCommandLine(new[] {"--IntRegex", "208"});
             Assert.AreEqual(208, r.Args.IntRegex);
 
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFullExample>(new[] {"--IntRegex", "218"}));
+                p.ParseCommandLine(new[] {"--IntRegex", "218"}));
 
             var testi = 20;
             Predicate<int> pred = i => i <= testi; // using closure
             ConfFullExample.IntPredicated_Predicate_closure = pred; // using delegate variable
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--IntPredicated", "19"}); // <=20
+            r = p.ParseCommandLine(new[] {"--IntPredicated", "19"}); // <=20
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFullExample>(new[] {"--IntPredicated", "21"})); // not <=20
+                p.ParseCommandLine(new[] {"--IntPredicated", "21"})); // not <=20
 
-            r = p.ParseCommandLine<ConfFullExample>(new[]
+            r = p.ParseCommandLine(new[]
                     {"--IntArrayPredicated", "3", "12", "21"});
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFullExample>(new[]
+                p.ParseCommandLine(new[]
                         {"--IntArrayPredicated", "3", "12", "1"})); // not item > 2
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFullExample>(new[]
+                p.ParseCommandLine(new[]
                         {"--IntArrayPredicated", "3", "12"})); // not length > 2
 
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--StringAllowed", "asd"});
+            r = p.ParseCommandLine(new[] {"--StringAllowed", "asd"});
             Assert.Throws<CmdException>(() =>
-                p.ParseCommandLine<ConfFullExample>(new[] {"--StringAllowed", "kjhpj"}));
+                p.ParseCommandLine(new[] {"--StringAllowed", "kjhpj"}));
 
             // features also: MustExists, DefaultValue, AllowedValues work too (string)
-            r = p.ParseCommandLine<ConfFullExample>(new[]
+            r = p.ParseCommandLine(new[]
                     {"--FileConfig", "./CmdArgsTester.exe.config"});
-            r = p.ParseCommandLine<ConfFullExample>(new[] {"--DirConfig", "./DirectoryName"});
+            r = p.ParseCommandLine(new[] {"--DirConfig", "./DirectoryName"});
         }
 
 

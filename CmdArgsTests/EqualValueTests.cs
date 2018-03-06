@@ -28,23 +28,22 @@ namespace CmdArgsTests
         [Test]
         public void TestEmpty()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfEmpty>();
             p.UseOnlyEqualitySyntax = true;
             p.AllowAdditionalArguments = true;
-            Res<ConfEmpty> r = p.ParseCommandLine<ConfEmpty>(new[] {"-a=", "noval"});
+            Res<ConfEmpty> r = p.ParseCommandLine(new[] {"-a=", "noval"});
             Assert.AreEqual("", r.Args.A);
             Assert.IsTrue(new[] {"noval"}.SequenceEqual(r.AdditionalArguments));
         }
 
 
-
         [Test]
         public void TestEmpty1()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfEmpty>();
             p.UseOnlyEqualitySyntax = true;
             p.AllowAdditionalArguments = true;
-            Res<ConfEmpty> r = p.ParseCommandLine<ConfEmpty>(new[] {"-a", "noval"});
+            Res<ConfEmpty> r = p.ParseCommandLine(new[] {"-a", "noval"});
             Assert.AreEqual("def", r.Args.A);
             Assert.IsTrue(new[] {"noval"}.SequenceEqual(r.AdditionalArguments));
         }
@@ -53,10 +52,10 @@ namespace CmdArgsTests
         [Test]
         public void TestEmpty2()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfEmpty>();
             p.UseOnlyEqualitySyntax = true;
             p.AllowAdditionalArguments = true;
-            Res<ConfEmpty> r = p.ParseCommandLine<ConfEmpty>(new[] {"-a"});
+            Res<ConfEmpty> r = p.ParseCommandLine(new[] {"-a"});
             Assert.AreEqual("def", r.Args.A);
         }
 
@@ -74,9 +73,9 @@ namespace CmdArgsTests
         [Test]
         public void TestOne()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfOne>();
             p.UseOnlyEqualitySyntax = true;
-            Res<ConfOne> r = p.ParseCommandLine<ConfOne>(new[] {"--Sec=qwer", "-a=uiop"});
+            Res<ConfOne> r = p.ParseCommandLine(new[] {"--Sec=qwer", "-a=uiop"});
             Assert.AreEqual("uiop", r.Args.A);
             Assert.AreEqual("qwer", r.Args.B);
         }
@@ -96,9 +95,9 @@ namespace CmdArgsTests
         [Test]
         public void TestArray()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfArray>();
             p.UseOnlyEqualitySyntax = true;
-            Res<ConfArray> r = p.ParseCommandLine<ConfArray>(new[]
+            Res<ConfArray> r = p.ParseCommandLine(new[]
                     {"-a=uiop,asdf", "--Sec=qwer;zxcv", "-c=\"gh df\""});
             Assert.AreEqual(2, r.Args.A.Length);
             Assert.AreEqual("uiop", r.Args.A[0]);
@@ -127,10 +126,10 @@ namespace CmdArgsTests
         [Test]
         public void TestAdd()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAdd>();
             p.UseOnlyEqualitySyntax = true;
             p.AllowAdditionalArguments = true;
-            Res<ConfAdd> r = p.ParseCommandLine<ConfAdd>(new[]
+            Res<ConfAdd> r = p.ParseCommandLine(new[]
                     {"-a=asdf", "noval", "-b=qewr", "jkli", "-34"});
             Assert.AreEqual("asdf", r.Args.A);
             Assert.AreEqual("qewr", r.Args.B);
@@ -142,9 +141,9 @@ namespace CmdArgsTests
         [Test]
         public void TestMixed()
         {
-            var p = new CmdArgsParser();
+            var p = new CmdArgsParser<ConfAdd>();
             p.UseOnlyEqualitySyntax = false;
-            Res<ConfAdd> r = p.ParseCommandLine<ConfAdd>(new[]
+            Res<ConfAdd> r = p.ParseCommandLine(new[]
                     {"-a=asdf", "-b", "jkli"});
             Assert.AreEqual("asdf", r.Args.A);
             Assert.AreEqual("jkli", r.Args.B);
