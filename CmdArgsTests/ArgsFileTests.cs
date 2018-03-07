@@ -94,5 +94,8 @@ namespace CmdArgsTests
 
 
         ////////////////////////////////////////////////////////////////
+        
+        // array args, Unstrictly, Unknown, Additional
+
     }
 }

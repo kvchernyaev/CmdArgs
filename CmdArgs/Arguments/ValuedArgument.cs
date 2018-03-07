@@ -125,6 +125,62 @@ namespace CmdArgs
         #endregion
 
 
+        public override void InitAndCheck<T>(MemberInfo mi, CmdArgsParser<T> p, T target)
+        {
+            if (Culture == null) Culture = p.Culture;
+
+            Type fieldType = mi.GetFieldType();
+            SetTypeAndCheck(fieldType);
+
+            // predicates are dependent on type
+            Type confType = target.GetType();
+            MemberInfo[] mis = confType.GetFieldsAndProps();
+            List<MemberInfo> miPredicates = mis.Where(x =>
+            {
+                Type miType = x.GetFieldType();
+                return miType.IsGenericType &&
+                       miType.GetGenericTypeDefinition() == typeof(Predicate<>);
+            }).ToList();
+            Tuple<List<Delegate>, List<Delegate>> predicates =
+                GetPredicates(miPredicates, mi.Name, target);
+
+            ValuePredicatesForCollection = predicates?.Item1;
+            ValuePredicatesForOne = predicates?.Item2;
+
+            // check allowed for predicateone
+            // check def for predicateone, predicatecol
+            CheckDefaultAndAllowedValues();
+        }
+
+
+        Tuple<List<Delegate>, List<Delegate>>
+            GetPredicates<T>(List<MemberInfo> allPredicates, string fieldName, T target)
+        {
+            var rv = new Tuple<List<Delegate>, List<Delegate>>(
+                new List<Delegate>(), new List<Delegate>());
+            foreach (MemberInfo mi in allPredicates)
+            {
+                if (!mi.Name.StartsWith(fieldName + "_Predicate")) // it is for other field
+                    continue;
+
+                Type predicateParType = mi.GetFieldType().GenericTypeArguments[0];
+
+                List<Type> possibleTypes = new[]
+                            {ValueCollectionType, ValueNullableType ?? ValueType}
+                    .Where(x => x != null).ToList();
+
+                if (!possibleTypes.Contains(predicateParType))
+                    throw new ConfException(
+                        $"Argument [{Name}]: predicate [{mi.Name}] parameter must be of {string.Join(" or ", possibleTypes.Select(x => x.Name))}, but it is of type {predicateParType.Name}");
+
+                var predicate = (Delegate) mi.GetValue(target);
+                if (ValueCollectionType == predicateParType) rv.Item1.Add(predicate);
+                else rv.Item2.Add(predicate);
+            }
+            return rv;
+        }
+
+
         static readonly Type[] AllowedTypes = {typeof(Guid), typeof(DateTime), typeof(TimeSpan)};
 
 
@@ -136,6 +192,7 @@ namespace CmdArgs
             };
 
 
+        #region check
         public override void CheckFieldType(Type fieldType)
         {
             // тут разрешены все енумы и примитивные типы
@@ -208,6 +265,7 @@ namespace CmdArgs
                     CheckValuesCollection(DefaultValueEffective, false);
             }
         }
+        #endregion
 
 
         #region deserialize

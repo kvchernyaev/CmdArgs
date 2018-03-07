@@ -15,7 +15,7 @@ namespace CmdArgs
 {
     public class CmdArgsParser<T> where T : new()
     {
-        readonly IFormatProvider _culture = CultureInfo.InvariantCulture;
+        public IFormatProvider Culture { get; private set; } = CultureInfo.InvariantCulture;
         // ReSharper disable MemberCanBePrivate.Global
 
 
@@ -38,7 +38,7 @@ namespace CmdArgs
 
         public CmdArgsParser(IFormatProvider culture)
         {
-            _culture = culture;
+            Culture = culture;
         }
 
 
@@ -52,7 +52,7 @@ namespace CmdArgs
 
         public Res<T> ParseCommandLine(string[] args)
         {
-            var rv = new Res<T> {Args = new T()};
+            var rv = new Res<T>();
             ParseCommandLine(args, rv);
             return rv;
         }
@@ -60,16 +60,31 @@ namespace CmdArgs
 
         public void ParseCommandLine(string[] args, Res<T> res)
         {
+            Bindings<T> bindings = ParseCommandLineEgoist(args, res);
+
+            foreach (Binding<T> binding in bindings.bindings.Where(x => !x.AlreadySet))
+            {
+                Argument a = binding.Argument;
+                if (a is ValuedArgument va)
+                    if (va.UseDefWhenNoArg && va.DefaultValue != null)
+                        binding.SetVal(null);
+
+                if (!binding.AlreadySet && a.Mandatory)
+                    throw new CmdException(
+                        $"Argument [{a.Name}] is mandatory but is not set");
+            }
+        }
+
+
+        internal Bindings<T> ParseCommandLineEgoist(string[] args, Res<T> res)
+        {
             if (res.AdditionalArguments == null)
                 res.AdditionalArguments = new List<string>();
             if (res.UnknownArguments == null)
                 res.UnknownArguments = new List<Tuple<string, string[]>>();
 
-            var bindings = new Bindings<T>(AllowUnknownArguments, this)
-                {
-                    Args = res,
-                    bindings = ExtractArgumentAttributes(res)
-                };
+            var bindings = new Bindings<T>(AllowUnknownArguments, this, res,
+                ExtractArgumentAttributes(res));
             CheckCongregate(bindings.bindings);
 
             for (var i = 0; i < args.Length;)
@@ -83,18 +98,7 @@ namespace CmdArgs
                         throw new CmdException(
                             $"Unnamed arguments is prohibited ({arg}). Use {nameof(AllowAdditionalArguments)} setting?");
             }
-
-            foreach (Binding<T> binding in bindings.bindings.Where(x => !x.AlreadySet))
-            {
-                Argument a = binding.Argument;
-                if (a is ValuedArgument va)
-                    if (va.UseDefWhenNoArg && va.DefaultValue != null)
-                        binding.SetVal(null);
-
-                if (!binding.AlreadySet && a.Mandatory)
-                    throw new CmdException(
-                        $"Argument [{a.Name}] is mandatory but is not set");
-            }
+            return bindings;
         }
 
 
@@ -212,101 +216,24 @@ namespace CmdArgs
         }
 
 
-        List<Binding<T>> ExtractArgumentAttributes(Res<T> target)
+        List<Binding<T>> ExtractArgumentAttributes(Res<T> res)
         {
             var rv = new List<Binding<T>>();
 
-            Type confType = target.Args.GetType();
-
-            MemberInfo[] fields = confType.GetFields();
-            MemberInfo[] properties = confType.GetProperties();
-
-            List<MemberInfo> mis = fields.Concat(properties).ToList();
-            List<MemberInfo> miPredicates = mis.Where(x =>
-            {
-                Type miType = GetFieldType(x);
-                return miType.IsGenericType &&
-                       miType.GetGenericTypeDefinition() == typeof(Predicate<>);
-            }).ToList();
+            Type confType = res.Args.GetType();
+            MemberInfo[] mis = confType.GetFieldsAndProps();
 
             foreach (MemberInfo mi in mis)
             {
-                var attr = (ArgumentAttribute) mi
-                    .GetCustomAttributes(typeof(ArgumentAttribute), true)
-                    .FirstOrDefault();
-                if (attr == null)
-                    continue;
+                Argument arg = mi.GetArgument();
+                if (arg == null) continue;
 
-                if (attr.Argument is ValuedArgument va)
-                {
-                    if (va.Culture == null) va.Culture = _culture;
+                arg.InitAndCheck(mi, this, res.Args);
 
-                    Type fieldType = GetFieldType(mi);
-                    va.SetTypeAndCheck(fieldType);
-
-                    // predicates are dependent on type
-                    Tuple<List<Delegate>, List<Delegate>> predicates =
-                        GetPredicates(miPredicates, mi.Name, va, target.Args);
-
-                    va.ValuePredicatesForCollection = predicates?.Item1;
-                    va.ValuePredicatesForOne = predicates?.Item2;
-
-                    // check allowed for predicateone
-                    // check def for predicateone, predicatecol
-                    va.CheckDefaultAndAllowedValues();
-                }
-                else
-                    attr.Argument.CheckFieldType(GetFieldType(mi));
-
-                rv.Add(new Binding<T>(LongNameIgnoreCase, attr.Argument, mi, target, this));
+                rv.Add(new Binding<T>(LongNameIgnoreCase, arg, mi, res, this));
             }
 
             return rv;
-        }
-
-
-        static Tuple<List<Delegate>, List<Delegate>>
-            GetPredicates(List<MemberInfo> allPredicates, string fieldName,
-                ValuedArgument va, T target)
-        {
-            var rv = new Tuple<List<Delegate>, List<Delegate>>(
-                new List<Delegate>(), new List<Delegate>());
-            foreach (MemberInfo mi in allPredicates)
-            {
-                if (!mi.Name.StartsWith(fieldName + "_Predicate")) // it is for other field
-                    continue;
-
-                Type predicateParType = GetFieldType(mi).GenericTypeArguments[0];
-
-                List<Type> possibleTypes = new[]
-                            {va.ValueCollectionType, va.ValueNullableType ?? va.ValueType}
-                    .Where(x => x != null).ToList();
-
-                if (!possibleTypes.Contains(predicateParType))
-                    throw new ConfException(
-                        $"Argument [{va.Name}]: predicate [{mi.Name}] parameter must be of {string.Join(" or ", possibleTypes.Select(x => x.Name))}, but it is of type {predicateParType.Name}");
-
-                var predicate = (Delegate) GetValue(mi, target);
-                if (va.ValueCollectionType == predicateParType) rv.Item1.Add(predicate);
-                else rv.Item2.Add(predicate);
-            }
-            return rv;
-        }
-
-
-        public static Type GetFieldType(MemberInfo mi)
-        {
-            if (mi is FieldInfo fi) return fi.FieldType;
-            if (mi is PropertyInfo pi) return pi.PropertyType;
-            throw new ConfException(mi.GetType().Name);
-        }
-
-
-        static object GetValue(MemberInfo mi, object target)
-        {
-            if (mi is FieldInfo fi) return fi.GetValue(target);
-            if (mi is PropertyInfo pi) return pi.GetValue(target);
-            throw new ConfException(mi.GetType().Name);
         }
     }
 }

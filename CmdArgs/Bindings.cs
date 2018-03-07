@@ -15,19 +15,24 @@ namespace CmdArgs
         bool AllowUnknownArgument { get; }
 
 
-        public Bindings(bool allowUnknownArgument, CmdArgsParser<T> cmdArgsParser)
+        public Bindings(bool allowUnknownArgument, CmdArgsParser<T> cmdArgsParser, Res<T> args,
+            List<Binding<T>> __bindings)
         {
             AllowUnknownArgument = allowUnknownArgument;
             _cmdArgsParser = cmdArgsParser;
+
+            Args = args;
+            bindings = __bindings;
+            foreach (Binding<T> b in bindings) b.bs = this;
         }
 
 
         CmdArgsParser<T> _cmdArgsParser;
 
 
-        public List<Binding<T>> bindings;
+        public readonly List<Binding<T>> bindings;
 
-        public Res<T> Args;
+        public readonly Res<T> Args;
 
 
         #region find biding
@@ -66,6 +71,7 @@ namespace CmdArgs
         #endregion
 
 
+        #region set val
         public void SetVal(char shortName, string[] values)
         {
             if (!Argument.CheckShortName(shortName))
@@ -94,6 +100,29 @@ namespace CmdArgs
                     throw new CmdException($"Unknown parameter: {nameUnknown}");
             else
                 binding.SetVal(values);
+        }
+
+
+        internal void SetParsedVal(Binding<T> bSource)
+        {
+            Binding<T> bTarget = this.bindings.FirstOrDefault(b => b.IsSame(bSource));
+            if (bTarget == null) throw new Exception($"SetParsedVal");
+
+            bTarget.SetParsedVal(bSource);
+        }
+        #endregion
+
+
+        internal void Merge(Bindings<T> bsSource)
+        {
+            if (bsSource.Args.AdditionalArguments != null)
+                this.Args.AdditionalArguments.AddRange(bsSource.Args.AdditionalArguments);
+            if (bsSource.Args.UnknownArguments != null)
+                this.Args.UnknownArguments.AddRange(bsSource.Args.UnknownArguments);
+
+            foreach (Binding<T> bSource in bsSource.bindings.Where(b => b.AlreadySet))
+                this.SetParsedVal(bSource);
+            // todo collections, UnstrictlyConf
         }
     }
 }

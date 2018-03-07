@@ -20,10 +20,13 @@ namespace CmdArgs
     internal class Binding<T> where T : new()
     {
         public Argument Argument { get; }
+
         readonly MemberInfo _miTarget;
         readonly T _targetConfObject;
+
         readonly Res<T> _target;
         readonly CmdArgsParser<T> _cmdArgsParser;
+        internal Bindings<T> bs;
 
         public bool AlreadySet { get; private set; } = false;
 
@@ -56,50 +59,42 @@ namespace CmdArgs
             Argument.ShortName.HasValue && Argument.ShortName.Value == shortName;
 
 
+        public bool IsSame(Binding<T> other) => _miTarget == other._miTarget;
+
+
         public void SetVal(string[] values)
         {
             if (AlreadySet && !Argument.AllowMultiple)
                 throw new CmdException(
                     $"Argument [{Argument.Name}] can not be set multiple times");
 
-            if (Argument.Parse(GetValueInternal(), values, out object argVal))
-                SetValueInternal(argVal);
+            if (Argument.Parse(_miTarget.GetValue(_targetConfObject), values, out object argVal))
+                SetParsedVal(argVal);
+        }
 
+
+        internal void SetParsedVal(Binding<T> bArgVal)
+        {
+            object argVal = _miTarget.GetValue(bArgVal._targetConfObject);
+            SetParsedVal(argVal);
+        }
+
+
+        void SetParsedVal(object argVal)
+        {
+            SetValueInternal(argVal);
             if (Argument is ArgsFileArgument afa)
             {
-                var fi = (FileInfo) GetValueInternal();
-                afa.Apply(fi, _cmdArgsParser, _target);
+                var fi = (FileInfo) _miTarget.GetValue(_targetConfObject);
+                afa.Apply(fi, _cmdArgsParser, bs);
             }
         }
 
 
-        /// <param name="argVal">Must be of argument's type</param>
         void SetValueInternal(object argVal)
         {
-            if (_miTarget is FieldInfo fi)
-                fi.SetValue(_targetConfObject, argVal);
-            else if (_miTarget is PropertyInfo pi)
-                pi.SetValue(_targetConfObject, argVal);
-            else
-                throw new ConfException(
-                    $"Binding.SetValueInternal(): type [{_miTarget.GetType().Name}] is not accepted");
-
+            _miTarget.SetValue(_targetConfObject, argVal);
             AlreadySet = true;
-        }
-
-
-        object GetValueInternal()
-        {
-            object rv;
-            if (_miTarget is FieldInfo fi)
-                rv = fi.GetValue(_targetConfObject);
-            else if (_miTarget is PropertyInfo pi)
-                rv = pi.GetValue(_targetConfObject);
-            else
-                throw new ConfException(
-                    $"Binding.SetValueInternal(): type [{_miTarget.GetType().Name}] is not accepted");
-
-            return rv;
         }
     }
 }

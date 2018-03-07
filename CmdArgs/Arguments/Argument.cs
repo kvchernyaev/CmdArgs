@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 #endregion
@@ -90,6 +91,13 @@ namespace CmdArgs
         public bool Mandatory { get; set; } = false;
         public virtual bool AllowMultiple { get; set; } = false;
         #endregion
+
+
+        public virtual void InitAndCheck<T>(MemberInfo mi, CmdArgsParser<T> p, T target)
+            where T : new()
+        {
+            CheckFieldType(mi.GetFieldType());
+        }
 
 
         public abstract void CheckFieldType(Type fieldType);
