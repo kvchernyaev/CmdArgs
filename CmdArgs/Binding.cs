@@ -64,9 +64,9 @@ namespace CmdArgs
 
         public void SetVal(string[] values)
         {
-            if (AlreadySet && !Argument.AllowMultiple)
-                throw new CmdException(
-                    $"Argument [{Argument.Name}] can not be set multiple times");
+            //if (AlreadySet && !Argument.AllowMultiple)
+            //    throw new CmdException(
+            //        $"Argument [{Argument.Name}] can not be set multiple times");
 
             if (Argument.Parse(_miTarget.GetValue(_targetConfObject), values, out object argVal))
                 SetParsedVal(argVal);

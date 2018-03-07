@@ -87,7 +87,7 @@ namespace CmdArgsTests
 
             Res<Conf> r = p.ParseCommandLine(new[]
                     {"-d", ArgsConfFilepath, "-s=nm", "-d", ArgsConfFilepath,});
-            Assert.AreEqual("nm", r.Args.S);
+            Assert.AreEqual("asdffs", r.Args.S);
             Assert.AreEqual("qwer", r.Args.T);
             Assert.AreEqual("uio 89", r.Args.U);
         }
@@ -95,7 +95,7 @@ namespace CmdArgsTests
 
         ////////////////////////////////////////////////////////////////
         
-        // array args, Unstrictly, Unknown, Additional
+        // todo array args, Unstrictly, Unknown, Additional
 
     }
 }

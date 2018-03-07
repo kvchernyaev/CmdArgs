@@ -103,7 +103,7 @@ namespace CmdArgs
         }
 
 
-        internal void SetParsedVal(Binding<T> bSource)
+        void SetParsedVal(Binding<T> bSource)
         {
             Binding<T> bTarget = this.bindings.FirstOrDefault(b => b.IsSame(bSource));
             if (bTarget == null) throw new Exception($"SetParsedVal");
