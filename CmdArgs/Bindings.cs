@@ -10,42 +10,46 @@ using System.Threading.Tasks;
 
 namespace CmdArgs
 {
-    internal class Bindings<T>
+    internal class Bindings<T> where T : new()
     {
         bool AllowUnknownArgument { get; }
 
 
-        public Bindings(bool allowUnknownArgument)
+        public Bindings(bool allowUnknownArgument, CmdArgsParser<T> cmdArgsParser)
         {
             AllowUnknownArgument = allowUnknownArgument;
+            _cmdArgsParser = cmdArgsParser;
         }
 
 
-        public List<Binding> bindings;
+        CmdArgsParser<T> _cmdArgsParser;
+
+
+        public List<Binding<T>> bindings;
 
         public Res<T> Args;
 
 
         #region find biding
-        public Binding FindBinding(char shortName)
+        public Binding<T> FindBinding(char shortName)
         {
-            Binding rv = bindings.FirstOrDefault(x => x.Is(shortName));
+            Binding<T> rv = bindings.FirstOrDefault(x => x.Is(shortName));
             return rv;
         }
 
 
-        public Binding FindBinding(string longName)
+        public Binding<T> FindBinding(string longName)
         {
-            Binding rv = bindings.FirstOrDefault(x => x.Is(longName));
+            Binding<T> rv = bindings.FirstOrDefault(x => x.Is(longName));
             return rv;
         }
 
 
-        public Binding FindBinding(string name, bool isLongName) =>
+        public Binding<T> FindBinding(string name, bool isLongName) =>
             isLongName ? FindBinding(name) : FindBinding(name[0]);
 
 
-        public Binding FindBindingMin(string argName)
+        public Binding<T> FindBindingMin(string argName)
         {
             int lastI = argName.IndexOf("=");
             if (lastI < 0) lastI = argName.Length - 1;
@@ -54,7 +58,7 @@ namespace CmdArgs
             for (var i = 0; i <= lastI; i++)
             {
                 string testArgLongName = argName.Substring(0, i + 1);
-                Binding b = FindBinding(testArgLongName);
+                Binding<T> b = FindBinding(testArgLongName);
                 if (b != null) return b;
             }
             return null;
@@ -66,7 +70,7 @@ namespace CmdArgs
         {
             if (!Argument.CheckShortName(shortName))
                 throw new CmdException($"ShortName [{shortName}] is not allowed");
-            Binding binding = FindBinding(shortName);
+            Binding<T> binding = FindBinding(shortName);
             SetVal(binding, values, shortName.ToString());
         }
 
@@ -75,12 +79,12 @@ namespace CmdArgs
         {
             if (!Argument.CheckLongName(longName[0]))
                 throw new CmdException($"LongName [{longName}] is not allowed");
-            Binding binding = FindBinding(longName);
+            Binding<T> binding = FindBinding(longName);
             SetVal(binding, values, longName);
         }
 
 
-        public void SetVal(Binding binding, string[] values, string nameUnknown)
+        public void SetVal(Binding<T> binding, string[] values, string nameUnknown)
         {
             if (binding == null)
                 if (AllowUnknownArgument)

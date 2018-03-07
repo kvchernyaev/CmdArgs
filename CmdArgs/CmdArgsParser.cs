@@ -65,10 +65,10 @@ namespace CmdArgs
             if (res.UnknownArguments == null)
                 res.UnknownArguments = new List<Tuple<string, string[]>>();
 
-            var bindings = new Bindings<T>(AllowUnknownArguments)
+            var bindings = new Bindings<T>(AllowUnknownArguments, this)
                 {
                     Args = res,
-                    bindings = ExtractArgumentAttributes(res.Args)
+                    bindings = ExtractArgumentAttributes(res)
                 };
             CheckCongregate(bindings.bindings);
 
@@ -84,7 +84,7 @@ namespace CmdArgs
                             $"Unnamed arguments is prohibited ({arg}). Use {nameof(AllowAdditionalArguments)} setting?");
             }
 
-            foreach (Binding binding in bindings.bindings.Where(x => !x.AlreadySet))
+            foreach (Binding<T> binding in bindings.bindings.Where(x => !x.AlreadySet))
             {
                 Argument a = binding.Argument;
                 if (a is ValuedArgument va)
@@ -106,13 +106,13 @@ namespace CmdArgs
             if (IsArgLong(arg))
             {
                 string[] values = GetValues(bindings, args, arg, true, ref nextI,
-                    out string name, out Binding b);
+                    out string name, out Binding<T> b);
                 bindings.SetVal(b, values, name);
             }
             else if (IsArgShort(arg))
             {
                 string[] values = GetValues(bindings, args, arg, false, ref nextI,
-                    out string shortNames, out Binding b);
+                    out string shortNames, out Binding<T> b);
                 if (shortNames.Length == 1)
                     bindings.SetVal(b, values, shortNames[0].ToString());
                 else if (shortNames.Length > 1)
@@ -139,7 +139,7 @@ namespace CmdArgs
 
         string[] GetValues(Bindings<T> bindings, string[] args, string arg, bool islong,
             ref int nextI,
-            out string argName, out Binding b)
+            out string argName, out Binding<T> b)
         {
             argName = arg.Substring(islong ? 2 : 1);
             string[] rv;
@@ -184,7 +184,7 @@ namespace CmdArgs
             arg.StartsWith("-") && arg.Length >= 2 && Argument.CheckShortName(arg[1]);
 
 
-        void CheckCongregate(List<Binding> binds)
+        void CheckCongregate(List<Binding<T>> binds)
         {
             if (binds == null || binds.Count <= 1)
                 return;
@@ -212,11 +212,11 @@ namespace CmdArgs
         }
 
 
-        List<Binding> ExtractArgumentAttributes(object target)
+        List<Binding<T>> ExtractArgumentAttributes(Res<T> target)
         {
-            var rv = new List<Binding>();
+            var rv = new List<Binding<T>>();
 
-            Type confType = target.GetType();
+            Type confType = target.Args.GetType();
 
             MemberInfo[] fields = confType.GetFields();
             MemberInfo[] properties = confType.GetProperties();
@@ -246,7 +246,7 @@ namespace CmdArgs
 
                     // predicates are dependent on type
                     Tuple<List<Delegate>, List<Delegate>> predicates =
-                        GetPredicates(miPredicates, mi.Name, va, target);
+                        GetPredicates(miPredicates, mi.Name, va, target.Args);
 
                     va.ValuePredicatesForCollection = predicates?.Item1;
                     va.ValuePredicatesForOne = predicates?.Item2;
@@ -258,7 +258,7 @@ namespace CmdArgs
                 else
                     attr.Argument.CheckFieldType(GetFieldType(mi));
 
-                rv.Add(new Binding(LongNameIgnoreCase, attr.Argument, mi, target));
+                rv.Add(new Binding<T>(LongNameIgnoreCase, attr.Argument, mi, target, this));
             }
 
             return rv;
@@ -267,7 +267,7 @@ namespace CmdArgs
 
         static Tuple<List<Delegate>, List<Delegate>>
             GetPredicates(List<MemberInfo> allPredicates, string fieldName,
-                ValuedArgument va, object target)
+                ValuedArgument va, T target)
         {
             var rv = new Tuple<List<Delegate>, List<Delegate>>(
                 new List<Delegate>(), new List<Delegate>());

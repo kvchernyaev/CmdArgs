@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -16,22 +17,27 @@ using System.Windows.Markup;
 namespace CmdArgs
 {
     [DebuggerDisplay("{Argument} {_miTarget}")]
-    internal class Binding
+    internal class Binding<T> where T : new()
     {
         public Argument Argument { get; }
         readonly MemberInfo _miTarget;
-        readonly object _targetConfObject;
+        readonly T _targetConfObject;
+        readonly Res<T> _target;
+        readonly CmdArgsParser<T> _cmdArgsParser;
 
         public bool AlreadySet { get; private set; } = false;
 
 
         public Binding(bool longNameIgnoreCase, Argument argument, MemberInfo miTarget,
-            object targetConfObject)
+            Res<T> target, CmdArgsParser<T> cmdArgsParser)
         {
             _longNameIgnoreCase = longNameIgnoreCase;
             Argument = argument;
             _miTarget = miTarget;
-            _targetConfObject = targetConfObject;
+            _target = target;
+            _targetConfObject = target.Args;
+            _cmdArgsParser = cmdArgsParser;
+            _target = target;
         }
 
 
@@ -58,6 +64,12 @@ namespace CmdArgs
 
             if (Argument.Parse(GetValueInternal(), values, out object argVal))
                 SetValueInternal(argVal);
+
+            if (Argument is ArgsFileArgument afa)
+            {
+                var fi = (FileInfo) GetValueInternal();
+                afa.Apply(fi, _cmdArgsParser, _target);
+            }
         }
 
 

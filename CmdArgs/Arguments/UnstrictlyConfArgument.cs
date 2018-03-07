@@ -55,10 +55,11 @@ namespace CmdArgs
         }
 
 
-        internal static Binding IsSyntax<T>(ref string argName, Bindings<T> bindings, bool islong,
-            out string[] values)
+        internal static Binding<T> IsSyntax<T>(ref string argName, Bindings<T> bindings,
+            bool islong, out string[] values)
+            where T : new()
         {
-            Binding b = islong
+            Binding<T> b = islong
                 ? bindings.FindBindingMin(argName)
                 : bindings.FindBinding(argName[0]);
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace CmdArgs
 {
-    public class Res<T>
+    public class Res<T> where T : new()
     {
         public T Args { get; set; }
 
@@ -18,5 +18,11 @@ namespace CmdArgs
 
         public List<Tuple<string, string[]>> UnknownArguments { get; set; }
             = new List<Tuple<string, string[]>>();
+
+
+        public void Merge(Res<T> source)
+        {
+
+        }
     }
 }
