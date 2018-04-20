@@ -99,5 +99,11 @@ namespace CmdArgs
             argVal = conf;
             return rv;
         }
+
+
+        public void Append(UnstrictlyConf target, UnstrictlyConf source)
+        {
+            target.AddRange(source);
+        }
     }
 }

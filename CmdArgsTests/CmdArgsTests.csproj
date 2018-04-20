@@ -73,6 +73,9 @@
     <None Include="ArgsFileTests.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ArgsFileTests_Unstrictly.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ArgsFileTests_Additional.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

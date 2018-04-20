@@ -61,5 +61,12 @@ namespace CmdArgs
             if (_list == null) _list = new List<UnstrictlyConfItem>();
             _list.Add(item);
         }
+
+
+        internal void AddRange(IEnumerable<UnstrictlyConfItem> items)
+        {
+            if (_list == null) _list = new List<UnstrictlyConfItem>();
+            _list.AddRange(items);
+        }
     }
 }

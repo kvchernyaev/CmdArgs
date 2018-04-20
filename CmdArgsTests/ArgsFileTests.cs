@@ -95,6 +95,7 @@ namespace CmdArgsTests
         ////////////////////////////////////////////////////////////////
 
 
+        #region
         [Test]
         public void TestAdditionalOnlyBefore()
         {
@@ -151,12 +152,13 @@ namespace CmdArgsTests
                 new[] {"bef", "addit1", "addit2", "addit3", "after"}
                     .SequenceEqual(r.AdditionalArguments));
         }
+        #endregion
 
 
         ////////////////////////////////////////////////////////////////
-        // todo Unknown
 
 
+        #region
         [Test]
         public void TestUnknownOnlyBefore()
         {
@@ -242,12 +244,138 @@ namespace CmdArgsTests
             Assert.AreEqual("var1", r.UnknownArguments[3].Item2[0]);
             Assert.AreEqual("var2", r.UnknownArguments[3].Item2[1]);
         }
+        #endregion
 
 
         ////////////////////////////////////////////////////////////////
 
 
-        // todo array args
+        #region
         // todo Unstrictly
+        class ConfUnstrictly
+        {
+            [ArgsFileArgument('d', "argsFile")] public FileInfo ArgsFile;
+
+
+            [UnstrictlyConfArgument('D', "define")]
+            public UnstrictlyConf Uns;
+
+
+            [ValuedArgument('s')] public string S;
+            [ValuedArgument('t')] public string T;
+            [ValuedArgument('u')] public string U;
+        }
+
+
+
+        [Test]
+        public void TestUnstrictlyOnlyBefore()
+        {
+            var p = new CmdArgsParser<ConfUnstrictly>();
+            Res<ConfUnstrictly> r = p.ParseCommandLine(new[]
+                    {"-Dname=val", "-Dnhy=bghtl", "-d", ArgsConfFilepath});
+
+            Assert.IsNotNull(r.Args.Uns);
+            Assert.AreEqual(2, r.Args.Uns.Count);
+            Assert.AreEqual("name", r.Args.Uns[0].Name);
+            Assert.AreEqual("val", r.Args.Uns[0].Value);
+            Assert.AreEqual("nhy", r.Args.Uns[1].Name);
+            Assert.AreEqual("bghtl", r.Args.Uns[1].Value);
+
+            Assert.AreEqual("asdffs", r.Args.S);
+            Assert.AreEqual("qwer", r.Args.T);
+            Assert.AreEqual("uio 89", r.Args.U);
+        }
+
+
+        [Test]
+        public void TestUnstrictlyOnlyAfter()
+        {
+            var p = new CmdArgsParser<ConfUnstrictly>();
+            Res<ConfUnstrictly> r = p.ParseCommandLine(new[]
+                    {"-d", ArgsConfFilepath, "-Dname=val", "-Dnhy=bghtl"});
+
+            Assert.IsNotNull(r.Args.Uns);
+            Assert.AreEqual(2, r.Args.Uns.Count);
+            Assert.AreEqual("name", r.Args.Uns[0].Name);
+            Assert.AreEqual("val", r.Args.Uns[0].Value);
+            Assert.AreEqual("nhy", r.Args.Uns[1].Name);
+            Assert.AreEqual("bghtl", r.Args.Uns[1].Value);
+
+            Assert.AreEqual("asdffs", r.Args.S);
+            Assert.AreEqual("qwer", r.Args.T);
+            Assert.AreEqual("uio 89", r.Args.U);
+        }
+
+
+        static string ArgsConfUnstrictlyFilepath
+        {
+            get
+            {
+                Assembly a = Assembly.GetExecutingAssembly();
+                string filepath = Path.Combine(new FileInfo(a.Location).DirectoryName,
+                    "ArgsFileTests_Unstrictly.conf");
+                return filepath;
+            }
+        }
+
+
+        [Test]
+        public void TestUnstrictlyOnlyIn()
+        {
+            var p = new CmdArgsParser<ConfUnstrictly>();
+            Res<ConfUnstrictly> r = p.ParseCommandLine(new[]
+                    {"-d", ArgsConfUnstrictlyFilepath});
+
+            Assert.IsNotNull(r.Args.Uns);
+            Assert.AreEqual(2, r.Args.Uns.Count);
+            Assert.AreEqual("name", r.Args.Uns[0].Name);
+            Assert.AreEqual("val", r.Args.Uns[0].Value);
+            Assert.AreEqual("nhy", r.Args.Uns[1].Name);
+            Assert.AreEqual("bghtl", r.Args.Uns[1].Value);
+
+            Assert.AreEqual("asdffs", r.Args.S);
+            Assert.AreEqual("qwer", r.Args.T);
+            Assert.AreEqual("uio 89", r.Args.U);
+        }
+
+
+        [Test]
+        public void TestUnstrictlyUnion()
+        {
+            var p = new CmdArgsParser<ConfUnstrictly>();
+            Res<ConfUnstrictly> r = p.ParseCommandLine(new[]
+                    {"-Dbg=nh", "-Dmj=78", "-d", ArgsConfUnstrictlyFilepath, "-D_=1", "-Dq=."});
+
+            Assert.IsNotNull(r.Args.Uns);
+            Assert.AreEqual(6, r.Args.Uns.Count);
+            //
+            Assert.AreEqual("bg", r.Args.Uns[0].Name);
+            Assert.AreEqual("nh", r.Args.Uns[0].Value);
+
+            Assert.AreEqual("mj", r.Args.Uns[1].Name);
+            Assert.AreEqual("78", r.Args.Uns[1].Value);
+
+            Assert.AreEqual("name", r.Args.Uns[2].Name);
+            Assert.AreEqual("val", r.Args.Uns[2].Value);
+
+            Assert.AreEqual("nhy", r.Args.Uns[3].Name);
+            Assert.AreEqual("bghtl", r.Args.Uns[3].Value);
+
+            Assert.AreEqual("_", r.Args.Uns[4].Name);
+            Assert.AreEqual("1", r.Args.Uns[4].Value);
+
+            Assert.AreEqual("q", r.Args.Uns[5].Name);
+            Assert.AreEqual(".", r.Args.Uns[5].Value);
+
+            //
+            Assert.AreEqual("asdffs", r.Args.S);
+            Assert.AreEqual("qwer", r.Args.T);
+            Assert.AreEqual("uio 89", r.Args.U);
+        }
+        #endregion
+
+
+        // todo array args
     }
 }

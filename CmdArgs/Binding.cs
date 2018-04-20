@@ -93,7 +93,13 @@ namespace CmdArgs
 
         void SetValueInternal(object argVal)
         {
-            _miTarget.SetValue(_targetConfObject, argVal);
+            if (AlreadySet && Argument is UnstrictlyConfArgument uca)
+            {
+                var uc = (UnstrictlyConf) _miTarget.GetValue(_targetConfObject);
+                uca.Append(uc, (UnstrictlyConf) argVal);
+            }
+            else
+                _miTarget.SetValue(_targetConfObject, argVal);
             AlreadySet = true;
         }
     }
