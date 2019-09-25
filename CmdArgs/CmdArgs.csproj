@@ -1,76 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C6ECA89C-09EE-42DF-B400-38EE8DD36B49}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CmdArgs</RootNamespace>
-    <AssemblyName>CmdArgs</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Command line argumets strongly typed parser</Description>
+    <Company>Chernyaev Konstantin</Company>
+    <Authors>Chernyaev Konstantin</Authors>
+    <Version>1.0.1</Version>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Arguments\ArgsFileArgument.cs" />
-    <Compile Include="Arguments\Argument.cs" />
-    <Compile Include="Arguments\Attributes\ArgsFileArgumentAttribute.cs" />
-    <Compile Include="Arguments\Attributes\ArgumentAttribute.cs" />
-    <Compile Include="Arguments\ConcreteArgument.cs" />
-    <Compile Include="Arguments\CustomArgument.cs" />
-    <Compile Include="Arguments\Attributes\CustomArgumentAttribute.cs" />
-    <Compile Include="Arguments\DirArgument.cs" />
-    <Compile Include="Arguments\Attributes\DirArgumentAttribute.cs" />
-    <Compile Include="Arguments\FileArgument.cs" />
-    <Compile Include="Arguments\Attributes\FileArgumentAttribute.cs" />
-    <Compile Include="Arguments\IArgument.cs" />
-    <Compile Include="Arguments\IValuedArgument.cs" />
-    <Compile Include="Arguments\SwitchArgument.cs" />
-    <Compile Include="Arguments\Attributes\SwitchArgumentAttribute.cs" />
-    <Compile Include="Arguments\UnstrictlyConfArgument.cs" />
-    <Compile Include="Arguments\Attributes\UnstrictlyConfArgumentAttribute.cs" />
-    <Compile Include="Arguments\ValuedArgument.cs" />
-    <Compile Include="Arguments\Attributes\ValuedArgumentAttribute.cs" />
-    <Compile Include="Binding.cs" />
-    <Compile Include="Bindings.cs" />
-    <Compile Include="Exceptions\ConfException.cs" />
-    <Compile Include="Exceptions\CmdArgsException.cs" />
-    <Compile Include="CmdArgsParser.cs" />
-    <Compile Include="Exceptions\CmdException.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Res.cs" />
-    <Compile Include="UnstrictlyConf.cs" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

@@ -1,0 +1,1 @@
+dotnet nuget push CmdArgs.1.0.1.nupkg -s https://api.nuget.org/v3/index.json -k oy2owlk3dnn3gpiv35mqdltsazm2i4we3aoxx5vly6avse

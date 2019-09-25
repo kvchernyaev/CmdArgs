@@ -55,7 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CmdArgs\CmdArgs.csproj">
-      <Project>{c6eca89c-09ee-42df-b400-38ee8dd36b49}</Project>
+      <Project>{260763C9-DA9C-4BCE-9D99-90AFF7974BCC}</Project>
       <Name>CmdArgs</Name>
     </ProjectReference>
   </ItemGroup>

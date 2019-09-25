@@ -69,12 +69,6 @@
     <Compile Include="ValueNullableTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CmdArgs\CmdArgs.csproj">
-      <Project>{c6eca89c-09ee-42df-b400-38ee8dd36b49}</Project>
-      <Name>CmdArgs</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="ArgsFileTests.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -91,6 +85,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CmdArgs\CmdArgs.csproj">
+      <Project>{260763c9-da9c-4bce-9d99-90aff7974bcc}</Project>
+      <Name>CmdArgs</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
