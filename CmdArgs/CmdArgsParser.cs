@@ -73,6 +73,9 @@ namespace CmdArgs
                     throw new CmdException(
                         $"Argument [{a.Name}] is mandatory but is not set");
             }
+
+            if (res.Args is ICheckAndPrepare<TArgs>)
+                ((ICheckAndPrepare<TArgs>)res.Args).CheckAndPrepare(res);
         }
 
 

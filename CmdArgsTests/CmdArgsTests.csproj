@@ -51,6 +51,7 @@
     <Compile Include="AdditionalArgumentsTests.cs" />
     <Compile Include="AllowedValuesTests.cs" />
     <Compile Include="ArgsFileTests.cs" />
+    <Compile Include="CheckAndPrepareTests.cs" />
     <Compile Include="EqualValueTests.cs" />
     <Compile Include="FluidBaseTests.cs" />
     <Compile Include="SimpleTypesTests.cs" />

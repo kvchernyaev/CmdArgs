@@ -6,7 +6,7 @@
     <Description>Command line argumets strongly typed parser</Description>
     <Company>Chernyaev Konstantin</Company>
     <Authors>Chernyaev Konstantin</Authors>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
 </Project>
