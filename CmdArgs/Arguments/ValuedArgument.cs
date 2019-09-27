@@ -125,7 +125,7 @@ namespace CmdArgs
         #endregion
 
 
-        public override void InitAndCheck<T>(MemberInfo mi, CmdArgsParser<T> p, T target)
+        public override void InitAndCheck<TArgs>(MemberInfo mi, CmdArgsParser<TArgs> p, TArgs target)
         {
             if (Culture == null) Culture = p.Culture;
 

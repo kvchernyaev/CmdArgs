@@ -93,8 +93,8 @@ namespace CmdArgs
         #endregion
 
 
-        public virtual void InitAndCheck<T>(MemberInfo mi, CmdArgsParser<T> p, T target)
-            where T : new()
+        public virtual void InitAndCheck<TArgs>(MemberInfo mi, CmdArgsParser<TArgs> p, TArgs target)
+            where TArgs : new()
         {
             CheckFieldType(mi.GetFieldType());
         }

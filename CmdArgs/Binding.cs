@@ -16,22 +16,22 @@ using System.Threading.Tasks;
 namespace CmdArgs
 {
     [DebuggerDisplay("{Argument} {_miTarget}")]
-    internal class Binding<T> where T : new()
+    internal class Binding<TArgs> where TArgs : new()
     {
         public Argument Argument { get; }
 
         readonly MemberInfo _miTarget;
-        readonly T _targetConfObject;
+        readonly TArgs _targetConfObject;
 
-        readonly Res<T> _target;
-        readonly CmdArgsParser<T> _cmdArgsParser;
-        internal Bindings<T> bs;
+        readonly Res<TArgs> _target;
+        readonly CmdArgsParser<TArgs> _cmdArgsParser;
+        internal Bindings<TArgs> bs;
 
         public bool AlreadySet { get; private set; } = false;
 
 
         public Binding(bool longNameIgnoreCase, Argument argument, MemberInfo miTarget,
-            Res<T> target, CmdArgsParser<T> cmdArgsParser)
+            Res<TArgs> target, CmdArgsParser<TArgs> cmdArgsParser)
         {
             _longNameIgnoreCase = longNameIgnoreCase;
             Argument = argument;
@@ -58,7 +58,7 @@ namespace CmdArgs
             Argument.ShortName.HasValue && Argument.ShortName.Value == shortName;
 
 
-        public bool IsSame(Binding<T> other) => _miTarget == other._miTarget;
+        public bool IsSame(Binding<TArgs> other) => _miTarget == other._miTarget;
 
 
         public void SetVal(string[] values)
@@ -72,7 +72,7 @@ namespace CmdArgs
         }
 
 
-        internal void SetParsedVal(Binding<T> bArgVal)
+        internal void SetParsedVal(Binding<TArgs> bArgVal)
         {
             object argVal = _miTarget.GetValue(bArgVal._targetConfObject);
             SetParsedVal(argVal);

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CmdArgs
 {
-    public abstract class ConcreteArgument<T> : ValuedArgument
+    public abstract class ConcreteArgument<TArg> : ValuedArgument
     {
         #region ctors
         protected ConcreteArgument(char shortName) : base(shortName) { }
@@ -28,7 +28,7 @@ namespace CmdArgs
         public override void CheckFieldType(Type fieldType)
         {
             Type elemType;
-            Type valueTypeMustBe = typeof(T);
+            Type valueTypeMustBe = typeof(TArg);
             if (!(fieldType == valueTypeMustBe ||
                   (elemType = GetElemTypeIfCollection(fieldType)) != null && elemType == valueTypeMustBe))
                 throw new ConfException(
@@ -38,14 +38,14 @@ namespace CmdArgs
 
         protected override bool CompareWithAllowedValue(object value, object allowedValue)
         {
-            var v = (T) DeserializeOneOrPass(value);
-            var a = (T) DeserializeOneOrPass(allowedValue);
+            var v = (TArg) DeserializeOneOrPass(value);
+            var a = (TArg) DeserializeOneOrPass(allowedValue);
 
             return Compare(v, a);
         }
 
 
-        protected virtual bool Compare(T value, T allowedValue) =>
+        protected virtual bool Compare(TArg value, TArg allowedValue) =>
             object.Equals(value, allowedValue);
     }
 }

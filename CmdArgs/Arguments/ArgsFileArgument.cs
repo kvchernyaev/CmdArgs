@@ -44,12 +44,12 @@ namespace CmdArgs
         #endregion
 
 
-        internal void Apply<T>(FileInfo value, CmdArgsParser<T> p, Bindings<T> bsTarget)
-            where T : new()
+        internal void Apply<TArgs>(FileInfo value, CmdArgsParser<TArgs> p, Bindings<TArgs> bsTarget)
+            where TArgs : new()
         {
             string[] fileCmdArgs = value.ReadFileAsArgs();
 
-            Bindings<T> bsSource = p.ParseCommandLineEgoist(fileCmdArgs, new Res<T>());
+            Bindings<TArgs> bsSource = p.ParseCommandLineEgoist(fileCmdArgs, new Res<TArgs>());
 
             bsTarget.Merge(bsSource);
         }

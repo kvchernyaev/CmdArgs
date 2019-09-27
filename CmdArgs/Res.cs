@@ -9,9 +9,9 @@ using System.Reflection;
 
 namespace CmdArgs
 {
-    public class Res<T> where T : new()
+    public class Res<TArgs> where TArgs : new()
     {
-        public T Args { get; set; } = new T();
+        public TArgs Args { get; set; } = new TArgs();
 
 
         public List<string> AdditionalArguments { get; set; }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CmdArgs
 {
-    public class CmdArgsParser<T> where T : new()
+    public class CmdArgsParser<TArgs> where TArgs : new()
     {
         public IFormatProvider Culture { get; private set; } = CultureInfo.InvariantCulture;
         // ReSharper disable MemberCanBePrivate.Global
@@ -42,27 +42,27 @@ namespace CmdArgs
         }
 
 
-        public static Res<T> Parse(string[] args)
+        public static Res<TArgs> Parse(string[] args)
         {
-            var p = new CmdArgsParser<T>();
-            Res<T> res = p.ParseCommandLine(args);
+            var p = new CmdArgsParser<TArgs>();
+            Res<TArgs> res = p.ParseCommandLine(args);
             return res;
         }
 
 
-        public Res<T> ParseCommandLine(string[] args)
+        public Res<TArgs> ParseCommandLine(string[] args)
         {
-            var rv = new Res<T>();
+            var rv = new Res<TArgs>();
             ParseCommandLine(args, rv);
             return rv;
         }
 
 
-        public void ParseCommandLine(string[] args, Res<T> res)
+        public void ParseCommandLine(string[] args, Res<TArgs> res)
         {
-            Bindings<T> bindings = ParseCommandLineEgoist(args, res);
+            Bindings<TArgs> bindings = ParseCommandLineEgoist(args, res);
 
-            foreach (Binding<T> binding in bindings.bindings.Where(x => !x.AlreadySet))
+            foreach (Binding<TArgs> binding in bindings.bindings.Where(x => !x.AlreadySet))
             {
                 Argument a = binding.Argument;
                 if (a is ValuedArgument va)
@@ -76,14 +76,14 @@ namespace CmdArgs
         }
 
 
-        internal Bindings<T> ParseCommandLineEgoist(string[] args, Res<T> res)
+        internal Bindings<TArgs> ParseCommandLineEgoist(string[] args, Res<TArgs> res)
         {
             if (res.AdditionalArguments == null)
                 res.AdditionalArguments = new List<string>();
             if (res.UnknownArguments == null)
                 res.UnknownArguments = new List<Tuple<string, string[]>>();
 
-            var bindings = new Bindings<T>(AllowUnknownArguments, this, res,
+            var bindings = new Bindings<TArgs>(AllowUnknownArguments, this, res,
                 ExtractArgumentAttributes(res));
             CheckCongregate(bindings.bindings);
 
@@ -102,7 +102,7 @@ namespace CmdArgs
         }
 
 
-        bool TryParseArgument(string[] args, int curI, out int nextI, Bindings<T> bindings)
+        bool TryParseArgument(string[] args, int curI, out int nextI, Bindings<TArgs> bindings)
         {
             string arg = args[curI];
             nextI = curI + 1;
@@ -110,13 +110,13 @@ namespace CmdArgs
             if (IsArgLong(arg))
             {
                 string[] values = GetValues(bindings, args, arg, true, ref nextI,
-                    out string name, out Binding<T> b);
+                    out string name, out Binding<TArgs> b);
                 bindings.SetVal(b, values, name);
             }
             else if (IsArgShort(arg))
             {
                 string[] values = GetValues(bindings, args, arg, false, ref nextI,
-                    out string shortNames, out Binding<T> b);
+                    out string shortNames, out Binding<TArgs> b);
                 if (shortNames.Length == 1)
                     bindings.SetVal(b, values, shortNames[0].ToString());
                 else if (shortNames.Length > 1)
@@ -141,9 +141,9 @@ namespace CmdArgs
         static readonly char[] EqualityModeValSeparators = {';', ',', ' '};
 
 
-        string[] GetValues(Bindings<T> bindings, string[] args, string arg, bool islong,
+        string[] GetValues(Bindings<TArgs> bindings, string[] args, string arg, bool islong,
             ref int nextI,
-            out string argName, out Binding<T> b)
+            out string argName, out Binding<TArgs> b)
         {
             argName = arg.Substring(islong ? 2 : 1);
             string[] rv;
@@ -188,7 +188,7 @@ namespace CmdArgs
             arg.StartsWith("-") && arg.Length >= 2 && Argument.CheckShortName(arg[1]);
 
 
-        void CheckCongregate(List<Binding<T>> binds)
+        void CheckCongregate(List<Binding<TArgs>> binds)
         {
             if (binds == null || binds.Count <= 1)
                 return;
@@ -216,9 +216,9 @@ namespace CmdArgs
         }
 
 
-        List<Binding<T>> ExtractArgumentAttributes(Res<T> res)
+        List<Binding<TArgs>> ExtractArgumentAttributes(Res<TArgs> res)
         {
-            var rv = new List<Binding<T>>();
+            var rv = new List<Binding<TArgs>>();
 
             Type confType = res.Args.GetType();
             MemberInfo[] mis = confType.GetFieldsAndProps();
@@ -230,7 +230,7 @@ namespace CmdArgs
 
                 arg.InitAndCheck(mi, this, res.Args);
 
-                rv.Add(new Binding<T>(LongNameIgnoreCase, arg, mi, res, this));
+                rv.Add(new Binding<TArgs>(LongNameIgnoreCase, arg, mi, res, this));
             }
 
             return rv;
